@@ -35,8 +35,10 @@ There are FOUR different Claude products that use "Skills", and they work differ
 **Important Clarification:**
 - **claude.ai** is the web interface you access in your browser
 - **Claude Desktop** is a separate native application you download and install on your computer
+- **Claude API** is for programmatic access in your applications
 - Both claude.ai AND Claude Desktop require .zip files for skills
-- Only Claude Code uses directory-based skills
+- Claude Code uses directory-based skills (no .zip)
+- Claude API is flexible - accepts .zip files, raw strings, or skill IDs
 
 ## Quick Answer: Do I Need .zip Files? {#quick-answer}
 
