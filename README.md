@@ -15,13 +15,17 @@ Automatically creates structured, searchable changelog entries when committing c
 
 ### Option 1: Via Plugin Manager (Recommended)
 
-```bash
-# Add the marketplace
-/plugin marketplace add https://github.com/justfinethanku/cc-changelog-plugin
-
-# Install the plugin
-/plugin install changelog
-```
+1. **Open your terminal**
+2. **Start Claude Code:**
+   ```bash
+   claude
+   ```
+3. **In the Claude Code chat, type these commands:**
+   ```
+   /plugin marketplace add https://github.com/justfinethanku/cc-changelog-plugin
+   /plugin install changelog
+   ```
+4. **Done!** The plugin is now installed and ready to use
 
 ### Option 2: Manual Installation
 
