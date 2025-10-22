@@ -20,25 +20,34 @@ Automatically creates structured, searchable changelog entries when committing c
    ```bash
    claude
    ```
-3. **In the Claude Code chat, type these commands:**
+3. **Add the marketplace to Claude Code:**
    ```
    /plugin marketplace add https://github.com/justfinethanku/cc-changelog-plugin
+   ```
+4. **Install the plugin:**
+   ```
    /plugin install changelog
    ```
-4. **Done!** The plugin is now installed and ready to use
+5. **Done!** The plugin is now installed and ready to use
 
 ### Option 2: Manual Installation
 
-```bash
-# Clone the repository
-git clone https://github.com/justfinethanku/cc-changelog-plugin
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/justfinethanku/cc-changelog-plugin
+   ```
 
-# Copy to your personal skills directory (works across all projects)
-cp -r cc-changelog-plugin/skills/commit ~/.claude/skills/
+2. **Choose where to install:**
 
-# Or copy to your project (works only in this project)
-cp -r cc-changelog-plugin/skills/commit .claude/skills/
-```
+   **For all projects** (personal skills directory):
+   ```bash
+   cp -r cc-changelog-plugin/skills/commit ~/.claude/skills/
+   ```
+
+   **For current project only** (project-specific):
+   ```bash
+   cp -r cc-changelog-plugin/skills/commit .claude/skills/
+   ```
 
 ## Usage
 
