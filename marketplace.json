@@ -1,0 +1,30 @@
+{
+  "name": "Changelog Plugin Marketplace",
+  "description": "Marketplace for the Git Changelog plugin",
+  "owner": "justfinethanku",
+  "plugins": [
+    {
+      "name": "changelog",
+      "displayName": "Git Changelog",
+      "description": "Automatically creates structured, searchable changelog entries when committing code. Documents what changed, why, and issues encountered.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Jonathan Edwards",
+        "url": "https://github.com/justfinethanku"
+      },
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/justfinethanku/cc-changelog-plugin"
+      },
+      "license": "MIT",
+      "source": "./.claude-plugin",
+      "keywords": [
+        "git",
+        "changelog",
+        "documentation",
+        "commit",
+        "workflow"
+      ]
+    }
+  ]
+}
