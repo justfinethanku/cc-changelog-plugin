@@ -1,0 +1,13 @@
+{
+  "name": "changelog-marketplace",
+  "version": "1.0.0",
+  "plugins": [
+    {
+      "name": "changelog",
+      "description": "Automatically creates structured, searchable changelog entries when committing code",
+      "version": "1.0.0",
+      "author": "Jonathan Edwards",
+      "source": "."
+    }
+  ]
+}

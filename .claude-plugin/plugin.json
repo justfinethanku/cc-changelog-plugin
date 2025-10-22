@@ -1,0 +1,22 @@
+{
+  "name": "changelog",
+  "displayName": "Git Changelog",
+  "description": "Automatically creates structured, searchable changelog entries when committing code. Documents what changed, why, and issues encountered.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Jonathan Edwards",
+    "url": "https://github.com/yourusername"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/changelog-plugin"
+  },
+  "license": "MIT",
+  "keywords": [
+    "git",
+    "changelog",
+    "documentation",
+    "commit",
+    "workflow"
+  ]
+}
