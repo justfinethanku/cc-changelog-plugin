@@ -1,23 +1,22 @@
 {
-  "name": "Changelog Plugin Marketplace",
-  "description": "Marketplace for the Git Changelog plugin",
-  "owner": "justfinethanku",
+  "name": "changelog-plugin-marketplace",
+  "owner": {
+    "name": "Jonathan Edwards",
+    "email": "jonathan@example.com"
+  },
   "plugins": [
     {
       "name": "changelog",
-      "displayName": "Git Changelog",
+      "source": "./skills/commit",
       "description": "Automatically creates structured, searchable changelog entries when committing code. Documents what changed, why, and issues encountered.",
       "version": "1.0.0",
       "author": {
         "name": "Jonathan Edwards",
-        "url": "https://github.com/justfinethanku"
+        "email": "jonathan@example.com"
       },
-      "repository": {
-        "type": "git",
-        "url": "https://github.com/justfinethanku/cc-changelog-plugin"
-      },
+      "homepage": "https://github.com/justfinethanku/cc-changelog-plugin",
+      "repository": "https://github.com/justfinethanku/cc-changelog-plugin",
       "license": "MIT",
-      "source": "./skills/commit",
       "keywords": [
         "git",
         "changelog",
