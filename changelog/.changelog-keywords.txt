@@ -1,0 +1,52 @@
+# Predefined keywords for changelog entries
+# These are automatically suggested based on file paths
+# You can add project-specific keywords here
+
+# Feature areas
+FRONTEND
+BACKEND
+DATABASE
+API
+UI
+COMPONENTS
+SERVICES
+MODELS
+CONTROLLERS
+VIEWS
+ROUTING
+MIDDLEWARE
+
+# Technical categories
+TESTING
+BUG_FIX
+FEATURE
+REFACTOR
+PERFORMANCE
+SECURITY
+ACCESSIBILITY
+DOCUMENTATION
+CONFIGURATION
+DEPLOYMENT
+MIGRATION
+DEPENDENCY
+BUILD
+CI_CD
+
+# File types
+STYLES
+SCRIPTS
+TEMPLATES
+CONFIG
+SCHEMA
+TYPES
+INTERFACES
+UTILS
+HELPERS
+HOOKS
+
+# Project-specific (add your own below)
+PLUGIN
+MARKETPLACE
+GITHUB
+CHANGELOG
+README

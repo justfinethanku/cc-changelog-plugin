@@ -1,6 +1,6 @@
 # Git Changelog Plugin
 
-Automatically creates structured, searchable changelog entries when committing code to git.
+Automatically creates structured, searchable changelog entries when committing code to git. Unlike traditional single-file changelogs that become unwieldy merge-conflict nightmares and lose context over time, this plugin creates individual timestamped entries that never conflict during merges, preserve complete context for each coding session, and build a rich searchable knowledge base of your project's evolution. Each entry captures not just what changed but WHY decisions were made, problems encountered, and lessons learned - creating a development journal that's infinitely more useful than a chronological list of bullet points. Plus, it's way cooler than anything Mike Dion proposed because it actually solves the real problems developers face: merge conflicts, lost context, and the inability to quickly find that one weird fix you did six months ago at 2am.
 
 ## Features
 
