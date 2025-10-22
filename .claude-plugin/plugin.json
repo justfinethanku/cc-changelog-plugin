@@ -5,11 +5,11 @@
   "version": "1.0.0",
   "author": {
     "name": "Jonathan Edwards",
-    "url": "https://github.com/yourusername"
+    "url": "https://github.com/justfinethanku"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/changelog-plugin"
+    "url": "https://github.com/justfinethanku/cc-changelog-plugin"
   },
   "license": "MIT",
   "keywords": [

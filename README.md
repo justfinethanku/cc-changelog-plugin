@@ -16,8 +16,8 @@ Automatically creates structured, searchable changelog entries when committing c
 ### Option 1: Via Plugin Manager (Recommended)
 
 ```bash
-# Add the marketplace (replace with your actual GitHub URL)
-/plugin marketplace add https://github.com/yourusername/changelog-plugin
+# Add the marketplace
+/plugin marketplace add https://github.com/justfinethanku/cc-changelog-plugin
 
 # Install the plugin
 /plugin install changelog
@@ -27,13 +27,13 @@ Automatically creates structured, searchable changelog entries when committing c
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/changelog-plugin
+git clone https://github.com/justfinethanku/cc-changelog-plugin
 
 # Copy to your personal skills directory (works across all projects)
-cp -r changelog-plugin/skills/commit ~/.claude/skills/
+cp -r cc-changelog-plugin/skills/commit ~/.claude/skills/
 
 # Or copy to your project (works only in this project)
-cp -r changelog-plugin/skills/commit .claude/skills/
+cp -r cc-changelog-plugin/skills/commit .claude/skills/
 ```
 
 ## Usage
@@ -148,7 +148,7 @@ Add project-specific keywords as needed - they're automatically added to the voc
 
 ## Contributing
 
-Issues and PRs welcome at: https://github.com/yourusername/changelog-plugin
+Issues and PRs welcome at: https://github.com/justfinethanku/cc-changelog-plugin
 
 ## License
 
