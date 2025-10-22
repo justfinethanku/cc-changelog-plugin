@@ -17,7 +17,7 @@
         "url": "https://github.com/justfinethanku/cc-changelog-plugin"
       },
       "license": "MIT",
-      "source": "./.claude-plugin",
+      "source": "./skills/commit",
       "keywords": [
         "git",
         "changelog",
