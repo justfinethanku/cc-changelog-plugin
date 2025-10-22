@@ -1,13 +1,29 @@
 {
-  "name": "changelog-marketplace",
-  "version": "1.0.0",
+  "name": "changelog-plugin-marketplace",
+  "owner": {
+    "name": "Jonathan Edwards",
+    "email": "jon@contentionmedia.com"
+  },
   "plugins": [
     {
       "name": "changelog",
-      "description": "Automatically creates structured, searchable changelog entries when committing code",
+      "source": "./skills/commit",
+      "description": "Automatically creates structured, searchable changelog entries when committing code. Documents what changed, why, and issues encountered.",
       "version": "1.0.0",
-      "author": "Jonathan Edwards",
-      "source": "."
+      "author": {
+        "name": "Jonathan Edwards",
+        "email": "jon@contentionmedia.com"
+      },
+      "homepage": "https://github.com/justfinethanku/cc-changelog-plugin",
+      "repository": "https://github.com/justfinethanku/cc-changelog-plugin",
+      "license": "MIT",
+      "keywords": [
+        "git",
+        "changelog",
+        "documentation",
+        "commit",
+        "workflow"
+      ]
     }
   ]
 }
