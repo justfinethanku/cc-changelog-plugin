@@ -1,4 +1,4 @@
-# The Definitive Guide to Claude Skills: Desktop vs Code
+# The Definitive Guide to Claude Skills: Code vs Web vs Desktop
 *Finally, a clear explanation of what the hell is going on*
 
 > **⚠️ Documentation Status:** The official documentation is fragmented and sometimes contradictory. This guide is based on:
@@ -7,13 +7,14 @@
 > - [Claude Support: Using Skills in Claude](https://support.claude.com/en/articles/12512180-using-skills-in-claude)
 > - Practical testing and community experience
 >
-> **Last verified:** January 2025
+> **Skills Launch:** Claude Skills were officially announced on October 15, 2025
+> **Last verified:** October 22, 2025
 
 ## Table of Contents
 1. [The Products: What Are We Even Talking About?](#the-products)
 2. [Quick Answer: Do I Need .zip Files?](#quick-answer)
 3. [Claude Code Skills (The CLI Tool)](#claude-code-skills)
-4. [Claude Desktop Skills (The Web Interface)](#claude-desktop-skills)
+4. [claude.ai and Claude Desktop Skills (Web & Native App)](#claude-ai-desktop-skills)
 5. [Why Everyone Is Confused](#why-everyone-is-confused)
 6. [Practical Examples](#practical-examples)
 7. [Sharing Skills via GitHub](#github-sharing)
@@ -21,22 +22,28 @@
 
 ## The Products: What Are We Even Talking About? {#the-products}
 
-There are THREE different Claude products that use "Skills", and they work differently:
+There are FOUR different Claude products that use "Skills", and they work differently:
 
 | Product | What It Is | How Skills Work | .zip Required? | Documentation |
 |---------|------------|-----------------|----------------|---------------|
 | **Claude Code** | CLI tool that runs in your terminal | Directory-based, filesystem storage | **NO** ❌ | [Docs](https://docs.claude.com/en/docs/claude-code/skills) |
-| **Claude Desktop** | Web interface at claude.ai | Upload .zip files through Settings | **YES** ✅ | [Support](https://support.claude.com/en/articles/12512180-using-skills-in-claude) |
+| **claude.ai** | Web interface in your browser | Upload .zip files through Settings | **YES** ✅ | [Support](https://support.claude.com/en/articles/12512180-using-skills-in-claude) |
+| **Claude Desktop** | Native app for macOS/Windows | Upload .zip files through Settings | **YES** ✅ | [Support](https://support.claude.com/en/articles/12512180-using-skills-in-claude) |
 | **Claude API** | Programmatic access for developers | Can use either format | **DEPENDS** 🤷 | [API Docs](https://docs.claude.com/en/api/skills-guide) |
 
-**Important Note:** The documentation is inconsistent. The Claude Code docs never mention .zip files and only describe directory-based skills. The support articles describe .zip uploads but don't clearly distinguish between platforms.
+**Important Clarification:**
+- **claude.ai** is the web interface you access in your browser
+- **Claude Desktop** is a separate native application you download and install on your computer
+- Both claude.ai AND Claude Desktop require .zip files for skills
+- Only Claude Code uses directory-based skills
 
 ## Quick Answer: Do I Need .zip Files? {#quick-answer}
 
 - **Using Claude Code (CLI)?** → NO, just create directories
-- **Using Claude Desktop (Web)?** → YES, you need .zip files
+- **Using claude.ai (Web)?** → YES, you need .zip files
+- **Using Claude Desktop (Native App)?** → YES, you need .zip files
 - **Building a plugin for Claude Code?** → NO, use directories
-- **Sharing skills with Desktop users?** → YES, create a .zip
+- **Sharing skills with claude.ai/Desktop users?** → YES, create a .zip
 
 ## Claude Code Skills (The CLI Tool) {#claude-code-skills}
 
@@ -119,17 +126,21 @@ git push
 # Team members get it automatically when they pull
 ```
 
-## Claude Desktop Skills (The Web Interface) {#claude-desktop-skills}
+## claude.ai and Claude Desktop Skills (Web & Native App) {#claude-ai-desktop-skills}
 
-### How Claude Desktop Skills Work
+### How claude.ai and Claude Desktop Skills Work
 
-According to [Claude Support documentation](https://support.claude.com/en/articles/12512180-using-skills-in-claude), Claude Desktop requires skills to be **uploaded as .zip files** through the web interface:
+According to [Claude Support documentation](https://support.claude.com/en/articles/12512180-using-skills-in-claude), both **claude.ai (web interface)** and **Claude Desktop (native app)** require skills to be **uploaded as .zip files** through their Settings interface:
 
 > "To add custom skills, click 'Upload skill' and upload a ZIP file containing your skill folder."
 
-This is completely different from Claude Code's directory-based approach.
+This applies to:
+- **claude.ai**: Access via browser at claude.ai → Settings → Capabilities
+- **Claude Desktop**: Native app → Settings → Capabilities
 
-### Creating a Claude Desktop Skill
+Both use the same .zip upload mechanism, which is completely different from Claude Code's directory-based approach.
+
+### Creating Skills for claude.ai or Claude Desktop
 
 1. **Create your skill directory structure:**
 ```
@@ -157,16 +168,26 @@ description: A skill for Claude Desktop
 zip -r my-desktop-skill.zip my-desktop-skill/
 ```
 
-4. **Upload through the web interface:**
-- Go to claude.ai
+4. **Upload through either interface:**
+
+**For claude.ai (web):**
+- Go to claude.ai in your browser
 - Settings → Capabilities → Skills
 - Click "Upload skill"
 - Select your .zip file
 
-### Claude Desktop Limitations
+**For Claude Desktop (native app):**
+- Open Claude Desktop application
+- Settings → Capabilities → Skills
+- Click "Upload skill"
+- Select your .zip file
 
-- **User-specific:** Skills can't be shared between users
-- **No version control:** Can't track changes via git
+### Limitations of claude.ai and Claude Desktop Skills
+
+- **User-specific installation:** Each user must upload skills to their own account
+- **Manual sharing:** You can share .zip files with others, but they must manually upload them
+- **No automatic distribution:** Can't push skills to team members automatically
+- **No version control:** Can't track changes via git (unless you version control the source before zipping)
 - **Manual updates:** Must re-upload .zip for changes
 - **No marketplace:** No plugin system like Claude Code
 
@@ -174,20 +195,24 @@ zip -r my-desktop-skill.zip my-desktop-skill/
 
 ### The Perfect Storm of Confusion
 
-1. **Same name, different systems:** Both products call them "Skills"
-2. **Same file format internally:** Both use `SKILL.md` files
+1. **Same name, different systems:** All products call them "Skills"
+2. **Same file format internally:** All use `SKILL.md` files
 3. **Mixed documentation:** The [support articles](https://support.claude.com/en/articles/12512198-how-to-create-custom-skills) don't clearly distinguish between platforms
-4. **Community telephone game:** People share "you need .zip files" without specifying which product
+4. **Community confusion:** Many people don't realize Claude Desktop is a separate native app, not the web interface
 5. **Documentation gaps:** The [Claude Code docs](https://docs.claude.com/en/docs/claude-code/skills) never explicitly say "we don't use .zip files"
+6. **Similar .zip requirements:** Both claude.ai AND Claude Desktop use .zip files, making it seem universal
 
 ### What We Can Infer
 
 Based on the available documentation:
 
 - **Claude Code documentation** only describes directory-based skills, never mentions .zip files
-- **Claude Support articles** describe .zip uploads for the web interface at claude.ai
-- **Your practical experience** confirms Claude Code works with directories, not .zip files
-- **The internal skill format (SKILL.md)** is the same, but the packaging differs by platform
+- **Claude Support articles** describe .zip uploads for both claude.ai (web) and Claude Desktop (native app)
+- **Practical testing confirms:**
+  - Claude Code works with directories only
+  - claude.ai requires .zip uploads
+  - Claude Desktop requires .zip uploads
+- **The internal skill format (SKILL.md)** is the same across all platforms, but the packaging differs
 
 ### Documentation References
 
@@ -220,11 +245,13 @@ EOF
 # That's it! No .zip needed!
 ```
 
-#### For Claude Desktop (Requires .zip)
+#### For claude.ai or Claude Desktop (Requires .zip)
 ```bash
 # Same skill, but now we need to package it
 zip -r commit-skill.zip skills/commit/
-# Upload commit-skill.zip through claude.ai Settings
+
+# For claude.ai: Upload through browser at claude.ai → Settings
+# For Claude Desktop: Upload through native app → Settings
 ```
 
 ### Example 2: Installing Skills
@@ -243,13 +270,21 @@ git clone repo-with-skills
 /plugin install skill-name
 ```
 
-#### Claude Desktop Method
+#### claude.ai and Claude Desktop Method
 ```
+For claude.ai (web):
 1. Download skill.zip
-2. Go to claude.ai
+2. Go to claude.ai in your browser
 3. Settings → Capabilities → Skills → Upload skill
 4. Select skill.zip
-5. That's the ONLY way
+
+For Claude Desktop (native app):
+1. Download skill.zip
+2. Open Claude Desktop application
+3. Settings → Capabilities → Skills → Upload skill
+4. Select skill.zip
+
+Note: Both require .zip files - that's the ONLY way for these platforms
 ```
 
 ## Sharing Skills via GitHub {#github-sharing}
@@ -482,9 +517,9 @@ cp -r skills/my-new-skill ~/.claude/skills/
 # If it works, push to GitHub
 ```
 
-### Converting for Desktop Users (The .zip Dance)
+### Sharing Skills for claude.ai and Claude Desktop Users
 
-If you want to be nice to Desktop users, you can provide .zip downloads:
+Since claude.ai and Claude Desktop users need .zip files, you can share skills with them through GitHub:
 
 ```bash
 # Create a script for Desktop users
@@ -580,11 +615,12 @@ https://github.com/justfinethanku/cc-changelog-plugin
 | I want to... | Product | What to do |
 |--------------|---------|------------|
 | Use skills in my terminal | Claude Code | Create directories in `~/.claude/skills/` |
-| Share skills with my team | Claude Code | Put in `.claude/skills/`, commit to git |
+| Share skills with my team automatically | Claude Code | Put in `.claude/skills/`, commit to git |
 | Distribute skills publicly | Claude Code | Create plugin with marketplace.json |
-| Use skills on claude.ai | Claude Desktop | Create .zip, upload through Settings |
+| Use skills on claude.ai (browser) | claude.ai | Create .zip, upload through Settings |
+| Use skills in desktop app | Claude Desktop | Create .zip, upload through Settings |
+| Share .zip skills with others | claude.ai/Desktop | Share .zip file, recipients upload manually |
 | Build reusable automation | Claude Code | Create skill directory, no .zip needed |
-| Have Claude help in browser | Claude Desktop | Must use .zip upload |
 
 ### File Paths Quick Reference
 
@@ -594,32 +630,38 @@ https://github.com/justfinethanku/cc-changelog-plugin
 ./project/.claude/skills/skill-name/ # Project skills
 ./plugin/skills/skill-name/           # Plugin skills
 
-# Claude Desktop (Web)
-# No filesystem access - must upload .zip through web UI
+# claude.ai (Web Browser)
+# No filesystem access - must upload .zip through web UI at claude.ai
+
+# Claude Desktop (Native App)
+# No filesystem access - must upload .zip through app Settings
 ```
 
 ### The Golden Rules
 
 1. **Claude Code = Directories** (no .zip)
-2. **Claude Desktop = .zip files** (required)
-3. **Same SKILL.md format** (but different packaging)
-4. **Not interchangeable** (can't use Desktop skills in Code without extraction)
-5. **When in doubt:** Code is filesystem-based, Desktop is upload-based
+2. **claude.ai = .zip files** (required)
+3. **Claude Desktop = .zip files** (required)
+4. **Same SKILL.md format** (but different packaging)
+5. **Not interchangeable** (can't use .zip skills in Code without extraction)
+6. **When in doubt:** Code is filesystem-based, claude.ai and Desktop are upload-based
 
 ## Final Words
 
 Based on available documentation and practical testing:
 
 - **Claude Code (CLI)** uses directory-based skills according to [official docs](https://docs.claude.com/en/docs/claude-code/skills)
-- **Claude Desktop (Web)** requires .zip uploads per [support articles](https://support.claude.com/en/articles/12512180-using-skills-in-claude)
-- **The documentation is fragmented** and doesn't explicitly address the differences
+- **claude.ai (Web)** requires .zip uploads per [support articles](https://support.claude.com/en/articles/12512180-using-skills-in-claude)
+- **Claude Desktop (Native App)** also requires .zip uploads per the same support articles
+- **The documentation is fragmented** and doesn't explicitly distinguish between these platforms
 
 The confusion stems from:
-1. Incomplete documentation that doesn't clearly distinguish platforms
-2. Support articles that focus on web interface without mentioning Claude Code specifics
-3. Community assumptions spreading without platform context
+1. People not realizing Claude Desktop is a separate native app, not the web interface
+2. Both claude.ai AND Claude Desktop requiring .zip files, making it seem universal
+3. Incomplete documentation that doesn't clearly distinguish platforms
+4. Community assumptions spreading without platform context
 
-If someone tells you Claude Code needs .zip files, ask them to show you where in the [Claude Code documentation](https://docs.claude.com/en/docs/claude-code/skills) it mentions .zip files (spoiler: it doesn't). They're likely thinking of Claude Desktop or mixing up the platforms.
+If someone tells you Claude Code needs .zip files, ask them to show you where in the [Claude Code documentation](https://docs.claude.com/en/docs/claude-code/skills) it mentions .zip files (spoiler: it doesn't). They're likely thinking of claude.ai, Claude Desktop, or conflating all three products.
 
 And yes, this approach is still way cooler than anything Mike Dion proposed.
 
