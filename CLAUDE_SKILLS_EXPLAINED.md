@@ -775,7 +775,7 @@ The confusion stems from:
 3. Incomplete documentation that doesn't clearly distinguish platforms
 4. Community assumptions spreading without platform context
 
-If someone tells you Claude Code needs .zip files, ask them to show you where in the [Claude Code documentation](https://docs.claude.com/en/docs/claude-code/skills) it mentions .zip files (spoiler: it doesn't). They're likely thinking of claude.ai, Claude Desktop, or conflating all three products.
+If someone tells you Claude Code needs .zip files, ask them to show you where in the [Claude Code documentation](https://docs.claude.com/en/docs/claude-code/skills) it mentions .zip files (spoiler: it doesn't). They're likely thinking of claude.ai, Claude Desktop, mixing it up with the API's optional .zip support, or conflating all four products.
 
 And yes, this approach is still way cooler than anything Mike Dion proposed.
 
