@@ -2,7 +2,7 @@
   "name": "changelog-plugin-marketplace",
   "owner": {
     "name": "Jonathan Edwards",
-    "email": "jonathan@example.com"
+    "email": "jon@contentionmedia.com"
   },
   "plugins": [
     {
@@ -12,7 +12,7 @@
       "version": "1.0.0",
       "author": {
         "name": "Jonathan Edwards",
-        "email": "jonathan@example.com"
+        "email": "jon@contentionmedia.com"
       },
       "homepage": "https://github.com/justfinethanku/cc-changelog-plugin",
       "repository": "https://github.com/justfinethanku/cc-changelog-plugin",
