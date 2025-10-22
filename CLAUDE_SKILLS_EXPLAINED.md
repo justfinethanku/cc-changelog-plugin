@@ -60,7 +60,7 @@ According to the [official Claude Code documentation](https://docs.claude.com/en
 
 **Notably absent from the Claude Code docs:** Any mention of .zip files, upload interfaces, or packaging requirements.
 
-### Three Types of Claude Code Skills
+### Three Types of Claude Code Skills (Storage Locations)
 
 #### 1. Personal Skills
 - **Location:** `~/.claude/skills/skill-name/`
@@ -198,11 +198,16 @@ zip -r my-desktop-skill.zip my-desktop-skill/
 
 ## Claude API Skills (Programmatic Access) {#claude-api-skills}
 
+> **📝 Note on Terminology:**
+> Claude Code has "Three **Types**" of skills (Personal, Project, Plugin) based on **where they're stored**
+> Claude API has "Three **Methods**" (.zip, strings, skill IDs) based on **how they're delivered**
+> Both use the same SKILL.md format internally - the difference is storage vs delivery
+
 ### How Claude API Skills Work
 
 The [Claude API](https://docs.claude.com/en/api/skills-guide) offers the most flexibility for skills, supporting **multiple approaches**:
 
-#### Method 1: Direct Skill Upload (Like Desktop)
+#### Method 1: Upload .zip Files (Like Desktop/Web)
 ```python
 from anthropic import Anthropic
 
@@ -225,7 +230,7 @@ response = client.messages.create(
 )
 ```
 
-#### Method 2: Inline Skill Definition
+#### Method 2: Define Skills as Strings (API-Exclusive)
 ```python
 # Define skill content directly in your code
 skill_content = """
@@ -245,7 +250,7 @@ skill = client.beta.skills.create(
 )
 ```
 
-#### Method 3: Reference Pre-built Skills
+#### Method 3: Reference Existing Skill IDs (API-Exclusive)
 ```python
 # Use Anthropic's pre-built skills or shared skill IDs
 response = client.messages.create(
