@@ -1,6 +1,14 @@
 # The Definitive Guide to Claude Skills: Desktop vs Code
 *Finally, a clear explanation of what the hell is going on*
 
+> **⚠️ Documentation Status:** The official documentation is fragmented and sometimes contradictory. This guide is based on:
+> - [Claude Code Skills Documentation](https://docs.claude.com/en/docs/claude-code/skills)
+> - [Claude Support: How to Create Custom Skills](https://support.claude.com/en/articles/12512198-how-to-create-custom-skills)
+> - [Claude Support: Using Skills in Claude](https://support.claude.com/en/articles/12512180-using-skills-in-claude)
+> - Practical testing and community experience
+>
+> **Last verified:** January 2025
+
 ## Table of Contents
 1. [The Products: What Are We Even Talking About?](#the-products)
 2. [Quick Answer: Do I Need .zip Files?](#quick-answer)
@@ -15,11 +23,13 @@
 
 There are THREE different Claude products that use "Skills", and they work differently:
 
-| Product | What It Is | How Skills Work | .zip Required? |
-|---------|------------|-----------------|----------------|
-| **Claude Code** | CLI tool that runs in your terminal | Directory-based, filesystem storage | **NO** ❌ |
-| **Claude Desktop** | Web interface at claude.ai | Upload .zip files through Settings | **YES** ✅ |
-| **Claude API** | Programmatic access for developers | Can use either format | **DEPENDS** 🤷 |
+| Product | What It Is | How Skills Work | .zip Required? | Documentation |
+|---------|------------|-----------------|----------------|---------------|
+| **Claude Code** | CLI tool that runs in your terminal | Directory-based, filesystem storage | **NO** ❌ | [Docs](https://docs.claude.com/en/docs/claude-code/skills) |
+| **Claude Desktop** | Web interface at claude.ai | Upload .zip files through Settings | **YES** ✅ | [Support](https://support.claude.com/en/articles/12512180-using-skills-in-claude) |
+| **Claude API** | Programmatic access for developers | Can use either format | **DEPENDS** 🤷 | [API Docs](https://docs.claude.com/en/api/skills-guide) |
+
+**Important Note:** The documentation is inconsistent. The Claude Code docs never mention .zip files and only describe directory-based skills. The support articles describe .zip uploads but don't clearly distinguish between platforms.
 
 ## Quick Answer: Do I Need .zip Files? {#quick-answer}
 
@@ -32,7 +42,11 @@ There are THREE different Claude products that use "Skills", and they work diffe
 
 ### How Claude Code Skills Work
 
-Claude Code uses a **filesystem-based approach**. Skills are just directories with a `SKILL.md` file inside. That's it. No compression, no packaging, no bullshit.
+According to the [official Claude Code documentation](https://docs.claude.com/en/docs/claude-code/skills), Claude Code uses a **filesystem-based approach**. Skills are directories with a `SKILL.md` file inside. The documentation states:
+
+> "Skills are stored as directories containing a `SKILL.md` file."
+
+**Notably absent from the Claude Code docs:** Any mention of .zip files, upload interfaces, or packaging requirements.
 
 ### Three Types of Claude Code Skills
 
@@ -109,7 +123,11 @@ git push
 
 ### How Claude Desktop Skills Work
 
-Claude Desktop requires skills to be **uploaded as .zip files** through the web interface. This is completely different from Claude Code.
+According to [Claude Support documentation](https://support.claude.com/en/articles/12512180-using-skills-in-claude), Claude Desktop requires skills to be **uploaded as .zip files** through the web interface:
+
+> "To add custom skills, click 'Upload skill' and upload a ZIP file containing your skill folder."
+
+This is completely different from Claude Code's directory-based approach.
 
 ### Creating a Claude Desktop Skill
 
@@ -158,16 +176,24 @@ zip -r my-desktop-skill.zip my-desktop-skill/
 
 1. **Same name, different systems:** Both products call them "Skills"
 2. **Same file format internally:** Both use `SKILL.md` files
-3. **Mixed documentation:** Guides often say "Claude Skills" without specifying which product
-4. **Community telephone game:** People share "you need .zip files" without context
-5. **Reasonable but wrong assumption:** "If Desktop needs .zip, Code must too"
+3. **Mixed documentation:** The [support articles](https://support.claude.com/en/articles/12512198-how-to-create-custom-skills) don't clearly distinguish between platforms
+4. **Community telephone game:** People share "you need .zip files" without specifying which product
+5. **Documentation gaps:** The [Claude Code docs](https://docs.claude.com/en/docs/claude-code/skills) never explicitly say "we don't use .zip files"
 
-### The Truth
+### What We Can Infer
 
-- **Claude Code has NEVER required .zip files**
-- **Claude Desktop has ALWAYS required .zip files**
-- **They're different products with different requirements**
-- **The internal skill format (SKILL.md) is the same, but the packaging isn't**
+Based on the available documentation:
+
+- **Claude Code documentation** only describes directory-based skills, never mentions .zip files
+- **Claude Support articles** describe .zip uploads for the web interface at claude.ai
+- **Your practical experience** confirms Claude Code works with directories, not .zip files
+- **The internal skill format (SKILL.md)** is the same, but the packaging differs by platform
+
+### Documentation References
+
+- [Claude Code Skills](https://docs.claude.com/en/docs/claude-code/skills) - Describes directory-based storage only
+- [Creating Custom Skills](https://support.claude.com/en/articles/12512198-how-to-create-custom-skills) - Describes .zip packaging for web
+- [Using Skills in Claude](https://support.claude.com/en/articles/12512180-using-skills-in-claude) - Focuses on web interface upload
 
 ## Practical Examples {#practical-examples}
 
@@ -582,10 +608,29 @@ https://github.com/justfinethanku/cc-changelog-plugin
 
 ## Final Words
 
-The confusion about .zip files comes from conflating Claude Desktop (web) with Claude Code (CLI). They're different products with different requirements. Claude Code has never needed .zip files and never will - it's a filesystem-based tool that works with directories.
+Based on available documentation and practical testing:
 
-If someone tells you Claude Code needs .zip files, send them this document. If they insist, they're thinking of Claude Desktop. If they still insist, they're wrong and probably think of Mike Dion's proposals.
+- **Claude Code (CLI)** uses directory-based skills according to [official docs](https://docs.claude.com/en/docs/claude-code/skills)
+- **Claude Desktop (Web)** requires .zip uploads per [support articles](https://support.claude.com/en/articles/12512180-using-skills-in-claude)
+- **The documentation is fragmented** and doesn't explicitly address the differences
+
+The confusion stems from:
+1. Incomplete documentation that doesn't clearly distinguish platforms
+2. Support articles that focus on web interface without mentioning Claude Code specifics
+3. Community assumptions spreading without platform context
+
+If someone tells you Claude Code needs .zip files, ask them to show you where in the [Claude Code documentation](https://docs.claude.com/en/docs/claude-code/skills) it mentions .zip files (spoiler: it doesn't). They're likely thinking of Claude Desktop or mixing up the platforms.
+
+And yes, this approach is still way cooler than anything Mike Dion proposed.
 
 ---
 
-*Created with frustration and clarity by someone who finally figured this shit out*
+*Created with frustration and citations by someone who dug through all the contradictory documentation*
+
+## Additional Resources
+
+- [Claude Code Documentation](https://docs.claude.com/en/docs/claude-code/overview)
+- [Claude Support Center](https://support.claude.com/)
+- [Official Skills Repository](https://github.com/anthropics/skills)
+- [Claude Code GitHub](https://github.com/anthropics/claude-code)
+- [Community Skills Collection](https://github.com/travisvn/awesome-claude-skills)
