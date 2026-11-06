@@ -1,163 +1,220 @@
 # Git Changelog Plugin
 
-Automatically creates structured, searchable changelog entries when committing code to git. Unlike traditional single-file changelogs that become unwieldy merge-conflict nightmares and lose context over time, this plugin creates individual timestamped entries that never conflict during merges, preserve complete context for each coding session, and build a rich searchable knowledge base of your project's evolution. Each entry captures not just what changed but WHY decisions were made, problems encountered, and lessons learned - creating a development journal that's infinitely more useful than a chronological list of bullet points. Plus, it's way cooler than anything Mike Dion proposed because it actually solves the real problems developers face: merge conflicts, lost context, and the inability to quickly find that one weird fix you did six months ago at 2am.
+Create structured, searchable changelog entries while committing code with
+Claude Code. The skill records what changed, why decisions were made, problems
+encountered, testing notes, and next steps in individual Markdown files. A
+regenerated index groups entries by month and keyword.
 
-## Features
+The workflow runs when Claude invokes the skill. It does not intercept every
+`git commit`: there is no Git hook or background process. You can request a
+changelog in conversation or invoke the installed plugin skill explicitly.
 
-- **Auto-documentation**: Every commit creates a detailed changelog entry
-- **Structured format**: Captures what changed, why, issues encountered, testing notes, and next steps
-- **Searchable**: Auto-generated index with keyword search
-- **Smart keywords**: Suggests keywords based on file paths modified
-- **Merge-friendly**: Timestamps prevent filename collisions across branches
-- **Universal**: Works with any tech stack (JavaScript, Python, Rust, etc.)
+## Prerequisites
+
+- A local Claude Code installation. Setup commands below were checked with
+  **Claude Code 2.1.318 on Linux** on November 6, 2026. See the official
+  [Claude Code setup guide](https://code.claude.com/docs/en/setup) to install it.
+- Git and Bash available to Claude Code, and a Git repository containing work
+  you intend to commit. Configure your Git author identity before committing.
+- Network access to GitHub for marketplace installation and updates.
+- A working Claude Code sign-in or provider configuration for actual skill use.
+  Installing and inspecting the plugin does not make a model request.
+
+There is no `npm install`, Python environment, or separate API key for this
+plugin. Python 3 is needed only to run the contributor tests.
 
 ## Installation
 
-### Option 1: Via Plugin Manager (Recommended)
+### Install from the marketplace
 
-1. **Open your terminal**
-2. **Start Claude Code:**
-   ```bash
-   claude
-   ```
-3. **Add the marketplace to Claude Code:**
-   ```
-   /plugin marketplace add https://github.com/justfinethanku/cc-changelog-plugin
-   ```
-4. **Install the plugin:**
-   ```
-   /plugin install changelog
-   ```
-5. **Done!** The plugin is now installed and ready to use
+Run these commands in your terminal. The default user scope makes the plugin
+available to you across projects on this machine.
 
-### Option 2: Manual Installation
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/justfinethanku/cc-changelog-plugin
-   ```
-
-2. **Choose where to install:**
-
-   **For all projects** (personal skills directory):
-   ```bash
-   cp -r cc-changelog-plugin/skills/commit ~/.claude/skills/
-   ```
-
-   **For current project only** (project-specific):
-   ```bash
-   cp -r cc-changelog-plugin/skills/commit .claude/skills/
-   ```
-
-## Usage
-
-The skill activates automatically when you ask Claude Code to commit changes:
-
-```
-"Commit these changes"
-"Let's commit this work"
-"Create a git commit with changelog"
+<!-- install-marketplace -->
+```bash
+claude plugin marketplace add https://github.com/justfinethanku/cc-changelog-plugin
+claude plugin install changelog@changelog-plugin-marketplace --scope user
 ```
 
-You can also provide a commit message:
+Verify the installed version, enabled state, and skill inventory:
 
-```
-"Commit with message: Add user authentication"
-```
-
-### Skip Changelog (for trivial changes)
-
-```
-"Commit without changelog: Fix typo in README"
+<!-- verify-marketplace -->
+```bash
+claude plugin list --json
+claude plugin details changelog@changelog-plugin-marketplace
 ```
 
-### Amend Last Entry
+The list should include `changelog@changelog-plugin-marketplace` with
+`enabled: true`. Details should show Git Changelog and one skill named `commit`.
+Restart an existing Claude Code session after installation, then work from the
+Git repository you want to document.
 
+In an interactive Claude Code terminal session, the equivalent commands are
+`/plugin marketplace add https://github.com/justfinethanku/cc-changelog-plugin`
+and `/plugin install changelog@changelog-plugin-marketplace`. The install command
+opens the plugin details panel; choose an installation scope and complete the
+installation there.
+
+### Copy the skill manually
+
+Use this alternative when you want a personal or project skill instead of a
+marketplace plugin. It does not register a plugin or receive plugin updates.
+Choose one installation method to avoid loading duplicate copies. Review any
+existing `commit` skill before copying: the copy overwrites same-named files.
+
+First clone the source into a working directory:
+
+<!-- clone-manual -->
+```bash
+git clone https://github.com/justfinethanku/cc-changelog-plugin
 ```
-"Amend the last changelog entry with these changes"
+
+For a personal skill, run from the directory containing that clone:
+
+<!-- install-personal -->
+```bash
+mkdir -p ~/.claude/skills
+cp -R cc-changelog-plugin/skills/commit ~/.claude/skills/
+test -f ~/.claude/skills/commit/SKILL.md
 ```
 
-## What Gets Created
+For a project skill, run from the root of your **target Git repository**:
 
-### First Time Setup
-
-When you first commit with the plugin, it creates:
-
+<!-- install-project -->
+```bash
+mkdir -p .claude/skills
+cp -R /PATH/TO/cc-changelog-plugin/skills/commit .claude/skills/
+test -f .claude/skills/commit/SKILL.md
 ```
+
+Replace `/PATH/TO/cc-changelog-plugin` with the absolute path to the source clone.
+Commit `.claude/skills/commit/` if you want collaborators to receive this skill.
+The `test -f` commands exit successfully without output when the layout is correct.
+Start a new local Claude Code session and use `/skills` to inspect the copied
+skill. Copied skills do not appear in `claude plugin list`.
+
+See [installation methods and Claude surfaces](CLAUDE_SKILLS_EXPLAINED.md) for
+how a plugin differs from copied skills and API or cloud environments.
+
+## Try the workflow
+
+From a Git repository with a change you intend to commit, start Claude Code:
+
+```bash
+claude
+```
+
+For a marketplace installation, enter:
+
+```text
+/changelog:commit
+```
+
+You can also ask in conversation, for example:
+
+```text
+Create a git commit with a changelog for these changes.
+Commit with message: Add user authentication.
+```
+
+Claude can select the skill from its description; the explicit command avoids
+relying on automatic selection. Review the proposed scope, entry, and diff.
+The workflow asks for context, writes an entry and index, commits the selected
+files, and offers to push. Unrelated staged files stay staged. Selected files
+are committed in full; separate unrelated hunks in those files first.
+
+After the workflow, inspect the result with:
+
+```bash
+git show --stat --oneline HEAD
+git status --short
+```
+
+Check that the commit contains the intended code and changelog files and that
+the reported SHA matches. A push is a separate step requiring a configured
+remote and access to it. The conversational flow is model-driven; installation
+and deterministic Git tests do not guarantee every model's adherence.
+
+For a trivial change, ask `Commit without changelog: Fix typo in README`.
+To continue the same session entry, ask `Amend the last changelog entry with
+these changes`. This edits the entry; it does not by itself request a Git
+`commit --amend` or a history rewrite.
+
+## Generated files and search
+
+On first use, the workflow creates a keyword vocabulary, an index, and an entry:
+
+```text
 changelog/
-├── .changelog-keywords.txt    # Predefined and project-specific keywords
-└── README.md                  # Auto-generated searchable index
+├── .changelog-keywords.txt
+├── README.md
+└── YYYY-MM-DD-HHMM-descriptive-slug.md
 ```
 
-### After Each Commit
+Entries include **What Changed**, **Why**, **Issues Encountered**,
+**Dependencies**, **Testing Notes**, and **Next Steps**. The index contains
+monthly groups, summaries, and a keyword index. Search it with your editor's
+find command for tags such as `[DATABASE]`, `[BUG_FIX]`, or `[DOCUMENTATION]`.
+The skill suggests tags from changed paths and can add project-specific tags.
 
+Separate entries reduce contention, but timestamps have minute precision and
+the same timestamp and slug can collide. Inspect an existing destination before
+writing and choose a distinct slug for a different session. The shared
+`changelog/README.md` and keyword file can also conflict. After reconciling entry
+files in a merge, ask Claude to regenerate the index from all retained entries.
+
+## Update or disable the plugin
+
+Refresh the marketplace catalog and then update the installed user-scope plugin:
+
+<!-- update-marketplace -->
+```bash
+claude plugin marketplace update changelog-plugin-marketplace
+claude plugin update changelog@changelog-plugin-marketplace --scope user
 ```
-changelog/
-└── 2025-01-15-1430-feature-name.md   # Timestamped entry
+
+Restart Claude Code and repeat the verification commands to check the enabled
+state, version, and skill inventory. Updating the marketplace alone refreshes
+its catalog; it is not the same as updating the installed plugin.
+
+Temporarily disable and later re-enable a user-scope installation with:
+
+<!-- toggle-marketplace -->
+```bash
+claude plugin disable changelog@changelog-plugin-marketplace --scope user
+claude plugin enable changelog@changelog-plugin-marketplace --scope user
 ```
 
-## Changelog Entry Format
+To uninstall it, use:
 
-Each entry includes:
+<!-- uninstall-marketplace -->
+```bash
+claude plugin uninstall changelog@changelog-plugin-marketplace --scope user
+```
 
-- **What Changed**: Files modified with descriptions
-- **Why**: Decision rationale
-- **Issues Encountered**: Problems and workarounds
-- **Dependencies**: NPM/pip/cargo packages added
-- **Testing Notes**: What was tested, what wasn't, edge cases
-- **Next Steps**: Remaining tasks
+Restart the session after changes. These commands manage the plugin; they do
+not remove committed project changelog files. For a manual copy, pull the source
+clone and repeat the appropriate copy command to update it. Remove that copied
+skill directory when you no longer want it loaded, preserving any local edits.
 
-## Searching Your Changelog
+## Troubleshooting
 
-The auto-generated `changelog/README.md` includes:
+- **Marketplace or plugin not found:** add the marketplace, refresh its catalog,
+  and use the full `changelog@changelog-plugin-marketplace` identifier.
+- **Copy reports a missing directory, or the skill is absent:** create the
+  parent with `mkdir -p`, and check for `skills/commit/SKILL.md` at the chosen
+  personal or project location. A file at `skills/SKILL.md` is one level too high.
+- **Plugin is installed but the skill is unavailable:** inspect `plugin list`
+  and `plugin details`, enable it in the intended scope, and start a new session.
+  Use `/skills` to inspect available skills and `/changelog:commit` for the
+  plugin's explicit command. Check for a duplicate personal or project copy.
+- **No changes:** inspect `git status` in the target repository. The skill
+  exits without creating a commit when there is no work.
+- **Git rejects a commit:** fix the reported author identity, whitespace, or
+  hook failure, then review and retry. Staging can remain after a failed check.
 
-- **Keyword Index**: All keywords with entry counts
-- **Monthly Groups**: Entries organized by month
-- **One-line Summaries**: Quick overview of each session
-
-Use Cmd+F to search for keywords like `[DATABASE]`, `[BUG_FIX]`, etc.
-
-## Merge-Friendly Design
-
-- Timestamps in filenames prevent collisions across branches
-- Individual changelog entries never conflict during merge
-- If `README.md` conflicts, ask Claude to regenerate it
-
-## Example Keywords
-
-Common keywords automatically suggested:
-
-- `[FRONTEND]`, `[BACKEND]`, `[DATABASE]`
-- `[API]`, `[UI]`, `[COMPONENTS]`
-- `[TESTING]`, `[BUG_FIX]`, `[FEATURE]`
-- `[REFACTOR]`, `[PERFORMANCE]`, `[SECURITY]`
-- `[DEPLOYMENT]`, `[DOCUMENTATION]`, `[MIGRATION]`
-
-Add project-specific keywords as needed - they're automatically added to the vocabulary.
-
-## Best Practices
-
-**DO:**
-- ✅ Create entry for every feature, bug fix, or meaningful change
-- ✅ Be specific in "What Changed" (file paths, function names)
-- ✅ Explain "Why" decisions were made (most valuable for future you!)
-- ✅ Document failed experiments (valuable context)
-
-**DON'T:**
-- ❌ Use for typo fixes (say "commit without changelog")
-- ❌ Use generic descriptions ("made changes")
-- ❌ Skip "Why" section
-- ❌ Forget to test before committing
-
-## How It Works
-
-1. **Analyzes changes**: Runs `git diff --stat` to see what changed
-2. **Suggests keywords**: Based on file paths modified
-3. **Prompts for context**: What, why, issues, testing notes
-4. **Creates entry**: Timestamped markdown file in `changelog/`
-5. **Updates index**: Regenerates README with all entries
-6. **Commits reviewed files**: Selected code + generated changelog files together; unrelated staged work stays staged
-7. **Optional push**: Prompts to push to remote
+See [Claude Code plugin management](https://code.claude.com/docs/en/discover-plugins)
+for other installation scopes and current commands.
 
 ## Plugin structure
 
@@ -181,7 +238,7 @@ service.
 
 Issues and PRs welcome at: https://github.com/justfinethanku/cc-changelog-plugin
 
-Run the regression tests with Git, Bash and Python 3:
+Run the regression tests from the repository root with Git, Bash and Python 3:
 
 ```bash
 python3 -m unittest discover -s tests -v
@@ -202,7 +259,7 @@ for the standard layout and metadata fields.
 
 ## License
 
-MIT License - See LICENSE file for details
+MIT License - See [LICENSE](LICENSE) for details.
 
 ## Author
 
