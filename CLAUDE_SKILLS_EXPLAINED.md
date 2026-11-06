@@ -348,7 +348,7 @@ description: Creates detailed changelog when committing
 EOF
 
 # If distributing via plugin, reference in marketplace.json:
-# "source": "./skills/commit"
+# "source": "./" (the plugin root containing .claude-plugin/ and skills/)
 
 # That's it! No .zip needed!
 ```
@@ -512,7 +512,7 @@ cat > .claude-plugin/marketplace.json << 'EOF'
   "plugins": [
     {
       "name": "awesome-skills",
-      "source": "./skills",
+      "source": "./",
       "description": "Collection of awesome skills",
       "version": "1.0.0"
     }

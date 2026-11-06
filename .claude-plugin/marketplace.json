@@ -7,23 +7,9 @@
   "plugins": [
     {
       "name": "changelog",
-      "source": "./skills/commit",
-      "description": "Automatically creates structured, searchable changelog entries when committing code. Documents what changed, why, and issues encountered.",
-      "version": "1.0.1",
-      "author": {
-        "name": "Jonathan Edwards",
-        "email": "jon@contentionmedia.com"
-      },
-      "homepage": "https://github.com/justfinethanku/cc-changelog-plugin",
-      "repository": "https://github.com/justfinethanku/cc-changelog-plugin",
-      "license": "MIT",
-      "keywords": [
-        "git",
-        "changelog",
-        "documentation",
-        "commit",
-        "workflow"
-      ]
+      "source": "./",
+      "description": "Automatically creates structured, searchable changelog entries when committing code. Documents what changed, why, and issues encountered."
     }
-  ]
+  ],
+  "description": "Git changelog plugin for Claude Code."
 }

@@ -13,6 +13,10 @@ This directory contains detailed changelog entries for each development session.
 
 ### 2026-11
 
+#### [2026-11-06-0423-plugin-packaging.md](2026-11-06-0423-plugin-packaging.md)
+Use one plugin package and release manifest
+**Keywords**: `[CONFIGURATION]` `[PLUGIN]` `[REFACTOR]` `[TESTING]`
+
 #### [2026-11-06-0405-scoped-commits-security.md](2026-11-06-0405-scoped-commits-security.md)
 Scope commits to reviewed files
 **Keywords**: `[BUG_FIX]` `[DOCUMENTATION]` `[SECURITY]` `[TESTING]`
@@ -33,18 +37,19 @@ Quick reference for finding entries by topic:
 
 - **[BUG_FIX]** (1 entry): 2026-11-06-0405
 - **[CHANGELOG]** (1 entry): 2025-01-22-1415
-- **[CONFIGURATION]** (1 entry): 2025-01-22-1345
+- **[CONFIGURATION]** (2 entries): 2026-11-06-0423, 2025-01-22-1345
 - **[DEPLOYMENT]** (1 entry): 2025-01-22-1345
 - **[DOCUMENTATION]** (3 entries): 2026-11-06-0405, 2025-01-22-1415, 2025-01-22-1345
 - **[GITHUB]** (1 entry): 2025-01-22-1345
 - **[MARKETPLACE]** (1 entry): 2025-01-22-1345
-- **[PLUGIN]** (2 entries): 2025-01-22-1415, 2025-01-22-1345
+- **[PLUGIN]** (3 entries): 2026-11-06-0423, 2025-01-22-1415, 2025-01-22-1345
+- **[REFACTOR]** (1 entry): 2026-11-06-0423
 - **[README]** (1 entry): 2025-01-22-1415
 - **[SECURITY]** (1 entry): 2026-11-06-0405
-- **[TESTING]** (1 entry): 2026-11-06-0405
+- **[TESTING]** (2 entries): 2026-11-06-0423, 2026-11-06-0405
 
 ## Statistics
 
-- **Total Entries**: 3
+- **Total Entries**: 4
 - **Date Range**: 2025-01-22 to 2026-11-06
-- **Most Used Keywords**: DOCUMENTATION (3), PLUGIN (2)
+- **Most Used Keywords**: DOCUMENTATION (3), PLUGIN (3)
