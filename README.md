@@ -224,6 +224,10 @@ skill directory when you no longer want it loaded, preserving any local edits.
   from push review or finish locally. Recreating an entry can duplicate the
   operation. The skill relies on the session retaining its progress; it has no
   automatic transaction journal.
+- **Push is rejected because the remote branch advanced:** retain the saved
+  commit and entry. Follow [divergent push recovery](docs/recover-divergent-push.md)
+  to reconcile both histories and rebuild a conflicting index in a separate
+  worktree while preserving the original staged work.
 
 See [Claude Code plugin management](https://code.claude.com/docs/en/discover-plugins)
 for other installation scopes and current commands.
