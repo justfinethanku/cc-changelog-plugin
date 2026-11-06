@@ -156,12 +156,18 @@ Add project-specific keywords as needed - they're automatically added to the voc
 3. **Prompts for context**: What, why, issues, testing notes
 4. **Creates entry**: Timestamped markdown file in `changelog/`
 5. **Updates index**: Regenerates README with all entries
-6. **Commits everything**: Code + changelog together
+6. **Commits reviewed files**: Selected code + generated changelog files together; unrelated staged work stays staged
 7. **Optional push**: Prompts to push to remote
 
 ## Contributing
 
 Issues and PRs welcome at: https://github.com/justfinethanku/cc-changelog-plugin
+
+Run the scoped commit regression tests with Git, Bash and Python 3:
+
+```bash
+python3 -m unittest discover -s tests -v
+```
 
 ## License
 
