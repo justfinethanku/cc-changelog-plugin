@@ -92,3 +92,42 @@ class PushWorkflowTests(GitFixture):
             with self.subTest(commit=commit, branch=branch):
                 self.assertNotEqual(self.push_reviewed(commit, branch, check=False).returncode, 0)
                 self.assertEqual(self.remote_git("rev-parse", self.branch), self.initial)
+
+    def test_local_push_hook_rejection_preserves_partial_index_and_retry_snapshot(self):
+        self.write("other.txt", "tracked original\n")
+        self.scoped_commit(["other.txt"])
+        later = self.git("rev-parse", "HEAD").strip()
+        self.write("other.txt", "staged revision\n")
+        self.git("add", "--", "other.txt")
+        self.write("other.txt", "later unstaged revision\n")
+        self.write("local-only.txt", "untracked revision\n")
+        index = self.git("ls-files", "--stage")
+        status = self.git("status", "--porcelain")
+        count = self.git("rev-list", "--count", "HEAD")
+        hook = self.root / "no-hooks/pre-push"
+        self.write("no-hooks/pre-push", "#!/bin/sh\n"
+                   "printf '%s\\n' \"$@\" > .git/pre-push-args\n"
+                   "cat > .git/pre-push-input\n"
+                   "echo synthetic-local-push-rejection >&2\nexit 1\n")
+        hook.chmod(0o755)
+        rejected = self.push_reviewed(check=False)
+        self.assertNotEqual(rejected.returncode, 0)
+        self.assertIn("synthetic-local-push-rejection", rejected.stderr)
+        self.assertEqual((self.root / ".git/pre-push-args").read_text().splitlines(),
+                         ["origin", str(self.remote)])
+        self.assertEqual((self.root / ".git/pre-push-input").read_text().split(),
+                         [self.reviewed, self.reviewed, f"refs/heads/{self.branch}", self.initial])
+        self.assertEqual(self.remote_git("rev-parse", self.branch), self.initial)
+        self.assertEqual(self.git("rev-parse", "HEAD").strip(), later)
+        self.assertEqual(self.git("ls-files", "--stage"), index)
+
+        hook.unlink()  # Correct only the synthetic hook failure, then retry.
+        self.push_reviewed()
+        self.push_reviewed()
+        self.assertEqual(self.remote_git("rev-parse", self.branch), self.reviewed)
+        self.assertEqual(self.git("rev-parse", "HEAD").strip(), later)
+        self.assertEqual(self.git("rev-list", "--count", "HEAD"), count)
+        self.assertEqual(self.git("ls-files", "--stage"), index)
+        self.assertEqual(self.git("status", "--porcelain"), status)
+        self.assertEqual((self.root / "other.txt").read_text(), "later unstaged revision\n")
+        self.assertEqual((self.root / "local-only.txt").read_text(), "untracked revision\n")
