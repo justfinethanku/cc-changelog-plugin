@@ -132,7 +132,12 @@ git status --short
 
 Check that the commit contains the intended code and changelog files and that
 the reported SHA matches. A push is a separate step requiring a configured
-remote and access to it. The conversational flow is model-driven; installation
+remote and access to it. Review the destination and outgoing history, then push
+the saved full SHA to the saved destination branch. A delayed push or retry
+keeps that snapshot even if the local branch moves. A rejected push retains the
+local commit; retrying it does not require another changelog entry or commit.
+See [scoped push and recovery](skills/commit/SKILL.md#scoped-push-and-recovery).
+The conversational flow is model-driven; installation
 and deterministic Git tests do not guarantee every model's adherence.
 
 For a trivial change, ask `Commit without changelog: Fix typo in README`.
