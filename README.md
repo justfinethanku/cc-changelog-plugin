@@ -215,8 +215,15 @@ skill directory when you no longer want it loaded, preserving any local edits.
   plugin's explicit command. Check for a duplicate personal or project copy.
 - **No changes:** inspect `git status` in the target repository. The skill
   exits without creating a commit when there is no work.
-- **Git rejects a commit:** fix the reported author identity, whitespace, or
-  hook failure, then review and retry. Staging can remain after a failed check.
+- **Git rejects a commit:** retain the generated entry, fix the reported cause,
+  then stage/check and review the same scope again. Staging can remain after a
+  failed check. Follow [operation state and local recovery](skills/commit/SKILL.md#operation-state-and-local-recovery).
+- **The session stops during a commit:** inspect history before restarting the
+  workflow. Git might already have created the commit. Identify it from the
+  recorded starting state and entry contents, save its full SHA, then continue
+  from push review or finish locally. Recreating an entry can duplicate the
+  operation. The skill relies on the session retaining its progress; it has no
+  automatic transaction journal.
 
 See [Claude Code plugin management](https://code.claude.com/docs/en/discover-plugins)
 for other installation scopes and current commands.
