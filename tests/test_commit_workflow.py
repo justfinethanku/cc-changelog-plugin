@@ -19,7 +19,7 @@ def command_block(name):
     return match.group(1)
 
 
-class CommitWorkflowTests(unittest.TestCase):
+class GitFixture(unittest.TestCase):
     def setUp(self):
         self.sandbox = tempfile.TemporaryDirectory(prefix="changelog-commit-test-")
         self.addCleanup(self.sandbox.cleanup)
@@ -58,6 +58,8 @@ class CommitWorkflowTests(unittest.TestCase):
         return set(self.git("diff-tree", "--no-commit-id", "--name-only", "-z", "-r", "HEAD")
                    .rstrip("\0").split("\0"))
 
+
+class CommitWorkflowTests(GitFixture):
     def test_local_only_and_unrelated_staged_files_stay_out(self):
         self.write("app.txt", "after\n")
         self.write("local-credentials.txt", "synthetic local-only marker\n")

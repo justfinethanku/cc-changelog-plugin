@@ -13,6 +13,10 @@ This directory contains detailed changelog entries for each development session.
 
 ### 2026-11
 
+#### [2026-11-06-1715-pinned-pushes.md](2026-11-06-1715-pinned-pushes.md)
+Pin reviewed commits for push and recovery
+**Keywords**: `[BUG_FIX]` `[PLUGIN]` `[SECURITY]` `[TESTING]`
+
 #### [2026-11-06-0510-verified-installation.md](2026-11-06-0510-verified-installation.md)
 Document verified installation and maintenance
 **Keywords**: `[BUG_FIX]` `[DOCUMENTATION]` `[PLUGIN]` `[TESTING]`
@@ -47,7 +51,7 @@ Set up GitHub repository and configured Claude Code plugin marketplace for the c
 
 Quick reference for finding entries by topic:
 
-- **[BUG_FIX]** (2 entries): 2026-11-06-0510, 2026-11-06-0405
+- **[BUG_FIX]** (3 entries): 2026-11-06-1715, 2026-11-06-0510, 2026-11-06-0405
 - **[CHANGELOG]** (1 entry): 2025-01-22-1415
 - **[CONFIGURATION]** (2 entries): 2026-11-06-0423, 2025-01-22-1345
 - **[DEPLOYMENT]** (1 entry): 2025-01-22-1345
@@ -55,14 +59,14 @@ Quick reference for finding entries by topic:
 - **[GITHUB]** (1 entry): 2025-01-22-1345
 - **[MARKETPLACE]** (1 entry): 2025-01-22-1345
 - **[PERFORMANCE]** (1 entry): 2026-11-06-0500
-- **[PLUGIN]** (5 entries): 2026-11-06-0510, 2026-11-06-0500, 2026-11-06-0423, 2025-01-22-1415, 2025-01-22-1345
+- **[PLUGIN]** (6 entries): 2026-11-06-1715, 2026-11-06-0510, 2026-11-06-0500, 2026-11-06-0423, 2025-01-22-1415, 2025-01-22-1345
 - **[README]** (1 entry): 2025-01-22-1415
 - **[REFACTOR]** (1 entry): 2026-11-06-0423
-- **[SECURITY]** (1 entry): 2026-11-06-0405
-- **[TESTING]** (5 entries): 2026-11-06-0510, 2026-11-06-0500, 2026-11-06-0436, 2026-11-06-0423, 2026-11-06-0405
+- **[SECURITY]** (2 entries): 2026-11-06-1715, 2026-11-06-0405
+- **[TESTING]** (6 entries): 2026-11-06-1715, 2026-11-06-0510, 2026-11-06-0500, 2026-11-06-0436, 2026-11-06-0423, 2026-11-06-0405
 
 ## Statistics
 
-- **Total Entries**: 7
+- **Total Entries**: 8
 - **Date Range**: 2025-01-22 to 2026-11-06
-- **Most Used Keywords**: PLUGIN (5), TESTING (5)
+- **Most Used Keywords**: PLUGIN (6), TESTING (6)

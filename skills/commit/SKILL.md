@@ -102,9 +102,10 @@ You can optionally provide a summary:
    - Show commit SHA
 
 8. **Push prompt**
-   - Ask: "Push to remote? (Y/n)"
-   - If yes: `git push origin [current-branch]`
-   - Show push status
+   - Record the full commit SHA and destination branch; review the outgoing commits
+   - Ask: "Push this reviewed commit to origin/[destination-branch]? (Y/n)"
+   - If yes, follow the scoped push procedure below with the saved SHA and branch
+   - Report the push result; keep failed pushes separate from commit creation
 
 ### Collect index metadata
 
@@ -173,6 +174,39 @@ git --literal-pathspecs commit --only -m "$commit_message" -- "${commit_paths[@]
 
 `--only` leaves other files' pre-existing staged changes staged for their owner.
 Use these scoped commands when skipping or amending a changelog entry as well.
+
+### Scoped push and recovery
+
+After committing, record the full SHA just shown as `reviewed_commit` and the
+intended destination branch as `reviewed_branch`. Resolve these once, before
+review and the push prompt. Inspect the commit and all outgoing ancestors that
+the remote would receive; pushing a commit also publishes its missing history.
+Check the configured `origin` push destination. In detached HEAD, choose the
+destination explicitly rather than inferring it from the current branch.
+
+After approval, run this with those saved values. The full object ID pins the
+source even if another process advances or switches the local branch.
+
+<!-- scoped-push -->
+```bash
+(
+    set -e
+    [[ "$reviewed_commit" =~ ^([0-9a-f]{40}|[0-9a-f]{64})$ ]]
+    git cat-file -e "${reviewed_commit}^{commit}"
+    git check-ref-format "refs/heads/$reviewed_branch"
+    git -c remote.origin.mirror=false push --no-follow-tags --recurse-submodules=no \
+        origin "$reviewed_commit:refs/heads/$reviewed_branch"
+)
+```
+
+This updates the named branch without force, extra tags, a mirror push or
+submodule pushes. A remote rejection leaves the local commit intact. For an
+authentication or temporary transport failure, retry the same SHA and destination
+after correcting the cause; do not create another entry or commit. For an
+ambiguous transport result, check the remote branch with `git ls-remote` first.
+An already-published SHA needs no new commit. If the remote advanced, fetch and
+inspect the divergence; review any reconciled commit before requesting another
+push. Do not force the old snapshot over someone else's work.
 
 ### Changelog Input and Output
 
@@ -391,8 +425,8 @@ Resolve manually and ask to commit again
 
 **Push failed:**
 ```
-❌ Push failed (branch not up to date)
-Pull latest changes and try again
+❌ Push failed; the local commit is retained
+Inspect the failure and remote branch, then follow Scoped push and recovery
 ```
 
 ## Best Practices
