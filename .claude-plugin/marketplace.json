@@ -9,7 +9,7 @@
       "name": "changelog",
       "source": "./skills/commit",
       "description": "Automatically creates structured, searchable changelog entries when committing code. Documents what changed, why, and issues encountered.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Jonathan Edwards",
         "email": "jon@contentionmedia.com"
