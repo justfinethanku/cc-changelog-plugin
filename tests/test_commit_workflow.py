@@ -142,6 +142,74 @@ class CommitWorkflowTests(GitFixture):
             self.assertEqual(self.git("show", f"HEAD:{name}"), content)
         self.assertEqual(self.git("status", "--porcelain"), "")
 
+    def test_first_commit_preserves_an_unrelated_staged_file(self):
+        self.root = self.root / "fresh-repository"
+        self.root.mkdir()
+        self.git("init", "-q")
+        self.git("config", "core.hooksPath", str(self.root / "no-hooks"))
+        self.write("unrelated.txt", "someone else's first staged file\n")
+        self.git("add", "--", "unrelated.txt")
+        unrelated = self.git("ls-files", "--stage", "--", "unrelated.txt")
+        self.write("app.txt", "first version\n")
+        self.write("changelog/entry.md", "# First operation\n")
+        self.scoped_commit(["app.txt", "changelog/entry.md"])
+        self.assertEqual(set(self.git("ls-tree", "-r", "--name-only", "HEAD").splitlines()),
+                         {"app.txt", "changelog/entry.md"})
+        self.assertEqual(self.git("ls-files", "--stage", "--", "unrelated.txt"), unrelated)
+        self.assertEqual(self.git("diff", "--cached", "--name-only").strip(), "unrelated.txt")
+
+    def test_unrelated_staged_deletion_survives_a_scoped_commit(self):
+        self.write("other.txt", "keep in this commit\n")
+        self.git("add", "--", "other.txt")
+        self.git("commit", "-qm", "track another file")
+        self.git("rm", "--", "other.txt")
+        staged = self.git("diff", "--cached", "--raw")
+        self.write("app.txt", "requested change\n")
+        self.scoped_commit(["app.txt"])
+        self.assertEqual(self.git("show", "HEAD:other.txt"), "keep in this commit\n")
+        self.assertEqual(self.git("diff", "--cached", "--raw"), staged)
+        self.assertFalse((self.root / "other.txt").exists())
+
+    def test_identify_committed_operation_after_caller_failure_and_branch_advance(self):
+        # Model lost caller output after Git succeeds, not a Git error return.
+        # Recovery is model-driven: execute its history inspection in this fixture.
+        entry = "changelog/entry.md"
+        self.write("unrelated.txt", "staged by another owner\n")
+        self.git("add", "--", "unrelated.txt")
+        unrelated = self.git("ls-files", "--stage", "--", "unrelated.txt")
+        base = self.git("rev-parse", "HEAD").strip()
+        self.write("app.txt", "requested change\n")
+        self.write(entry, "# Existing operation\n")
+        source = '\n'.join(('set -e', 'commit_message="requested operation"',
+                            'commit_paths=("app.txt" "changelog/entry.md")',
+                            command_block("scoped-stage"), command_block("scoped-commit"),
+                            'exit 70'))
+        result = self.run_command(["bash", "-c", source], check=False)
+        self.assertEqual(result.returncode, 70)
+        committed = self.git("rev-parse", "HEAD").strip()
+        self.assertNotEqual(committed, base)
+        self.write("later.txt", "later operation\n")
+        self.scoped_commit(["later.txt"])
+        later_head = self.git("rev-parse", "HEAD").strip()
+        index = self.git("ls-files", "--stage")
+
+        candidate = self.git("--literal-pathspecs", "log", "--all", "-1", "--format=%H",
+                             "--", entry).strip()
+        self.assertEqual(candidate, committed)
+        self.assertNotEqual(candidate, later_head)
+        self.assertEqual(self.git("rev-parse", candidate + "^1").strip(), base)
+        self.assertEqual(self.git("show", "-s", "--format=%s", candidate).strip(),
+                         "requested operation")
+        self.assertEqual(self.git("show", candidate + ":" + entry), "# Existing operation\n")
+        paths = self.git("diff-tree", "--no-commit-id", "--name-only", "-r", candidate)
+        self.assertEqual(set(paths.splitlines()), {"app.txt", entry})
+        # Inspect and record this SHA; no replacement generation or commit.
+        self.assertEqual(self.git("rev-list", "--count", "HEAD").strip(), "3")
+        self.assertEqual(self.git("rev-parse", "HEAD").strip(), later_head)
+        self.assertEqual(self.git("ls-files", "--stage"), index)
+        self.assertEqual(self.git("ls-files", "--stage", "--", "unrelated.txt"), unrelated)
+        self.assertEqual(list((self.root / "changelog").glob("*.md")), [self.root / entry])
+
     def test_whitespace_check_failure_stops_before_commit(self):
         self.write("unrelated.txt", "already staged\n")
         self.git("add", "--", "unrelated.txt")

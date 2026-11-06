@@ -60,6 +60,8 @@ You can optionally provide a summary:
 
 ## Process Flow
 
+Before starting or resuming, follow [operation state and local recovery](#operation-state-and-local-recovery).
+
 1. **Check for changes**
    - Run `git status`
    - Inspect both staged and unstaged changes; identify the files belonging to the requested commit
@@ -99,7 +101,7 @@ You can optionally provide a summary:
 7. **Commit the reviewed files**
    - Follow the scoped commit commands below, including the exact changelog files just generated
    - Leave unrelated working-tree and staged changes out of this commit
-   - Show commit SHA
+   - Record the full commit SHA before reporting completion or proceeding to push
 
 8. **Push prompt**
    - Record the full commit SHA and destination branch; review the outgoing commits
@@ -174,6 +176,49 @@ git --literal-pathspecs commit --only -m "$commit_message" -- "${commit_paths[@]
 
 `--only` leaves other files' pre-existing staged changes staged for their owner.
 Use these scoped commands when skipping or amending a changelog entry as well.
+
+### Operation state and local recovery
+
+Treat generation, local commit and remote push as separate phases of the same
+operation. Keep the repository/worktree path, branch (or detached HEAD), exact
+`commit_paths`, generated entry path and intended message in the task's progress
+record. Record the starting HEAD if one exists, or note an unborn branch. Keep
+these details across tool calls and handoffs; this skill has no durable journal
+or automatic retry service.
+
+| Phase | State owned by this operation | Resume point |
+|---|---|---|
+| Generate | Its entry and the proposed index/vocabulary edits | Reuse the recorded entry; inspect existing files before writing. |
+| Stage and review | The selected paths; other staged paths belong to their owners | Fix the reported cause, inspect current changes, then stage/check and review the same scope again. |
+| Commit | An immutable commit once Git updates HEAD | Inspect the resulting commit and save its full SHA before moving to push. |
+| Push | The saved SHA and destination from Scoped push and recovery | Retry or reconcile that push without generating another entry or local commit. |
+
+If staging, a check or a hook rejects the local commit, retain the existing entry
+and working files. First inspect `git status`, HEAD and the reported error.
+Correct the cause and resume at stage/review with the same entry and selected
+paths. Rebuild the index if the entry inventory or metadata changed. Staging can
+remain after failure; do not reset the whole index, stash another owner's work,
+or remove a lock owned by a running Git process. If a merge is in progress,
+resolve it through the repository's merge workflow before resuming this partial
+commit procedure.
+
+If the caller stops or loses output during a commit, do not infer that Git failed.
+Inspect HEAD and its history, using the recorded starting HEAD and entry path to
+identify the operation's commit. If the branch moved or switched, inspect the
+reflog and the candidate commit itself. Check its parent, message, complete diff
+and entry contents; an entry filename alone does not prove a match. When the
+intended commit already exists, record that full SHA and continue to push review
+or finish locally. Do not generate a replacement entry or re-commit the same
+operation. If no matching commit exists and the intended changes remain, resume
+stage/review; if the outcome is still uncertain, retain the files and report the
+uncertainty rather than changing history.
+
+These are recovery instructions for the model, not transaction enforcement.
+Generation does not serialize concurrent writers, and `commit --only` reads the
+selected files' working-tree contents at commit time. Separate worktrees isolate
+files and indexes for independent sessions; they still share Git refs and remote
+state. This procedure does not repair overwritten entries or freeze a reviewed
+file snapshot against later edits.
 
 ### Scoped push and recovery
 

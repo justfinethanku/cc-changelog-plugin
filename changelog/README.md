@@ -13,6 +13,10 @@ This directory contains detailed changelog entries for each development session.
 
 ### 2026-11
 
+#### [2026-11-06-1740-local-commit-recovery.md](2026-11-06-1740-local-commit-recovery.md)
+Resume local commits from their existing operation state
+**Keywords**: `[REFACTOR]` `[DOCUMENTATION]` `[TESTING]`
+
 #### [2026-11-06-1715-pinned-pushes.md](2026-11-06-1715-pinned-pushes.md)
 Pin reviewed commits for push and recovery
 **Keywords**: `[BUG_FIX]` `[PLUGIN]` `[SECURITY]` `[TESTING]`
@@ -55,18 +59,18 @@ Quick reference for finding entries by topic:
 - **[CHANGELOG]** (1 entry): 2025-01-22-1415
 - **[CONFIGURATION]** (2 entries): 2026-11-06-0423, 2025-01-22-1345
 - **[DEPLOYMENT]** (1 entry): 2025-01-22-1345
-- **[DOCUMENTATION]** (4 entries): 2026-11-06-0510, 2026-11-06-0405, 2025-01-22-1415, 2025-01-22-1345
+- **[DOCUMENTATION]** (5 entries): 2026-11-06-1740, 2026-11-06-0510, 2026-11-06-0405, 2025-01-22-1415, 2025-01-22-1345
 - **[GITHUB]** (1 entry): 2025-01-22-1345
 - **[MARKETPLACE]** (1 entry): 2025-01-22-1345
 - **[PERFORMANCE]** (1 entry): 2026-11-06-0500
 - **[PLUGIN]** (6 entries): 2026-11-06-1715, 2026-11-06-0510, 2026-11-06-0500, 2026-11-06-0423, 2025-01-22-1415, 2025-01-22-1345
 - **[README]** (1 entry): 2025-01-22-1415
-- **[REFACTOR]** (1 entry): 2026-11-06-0423
+- **[REFACTOR]** (2 entries): 2026-11-06-1740, 2026-11-06-0423
 - **[SECURITY]** (2 entries): 2026-11-06-1715, 2026-11-06-0405
-- **[TESTING]** (6 entries): 2026-11-06-1715, 2026-11-06-0510, 2026-11-06-0500, 2026-11-06-0436, 2026-11-06-0423, 2026-11-06-0405
+- **[TESTING]** (7 entries): 2026-11-06-1740, 2026-11-06-1715, 2026-11-06-0510, 2026-11-06-0500, 2026-11-06-0436, 2026-11-06-0423, 2026-11-06-0405
 
 ## Statistics
 
-- **Total Entries**: 8
+- **Total Entries**: 9
 - **Date Range**: 2025-01-22 to 2026-11-06
-- **Most Used Keywords**: PLUGIN (6), TESTING (6)
+- **Most Used Keywords**: TESTING (7), PLUGIN (6)
