@@ -2,15 +2,13 @@
   "name": "changelog",
   "displayName": "Git Changelog",
   "description": "Automatically creates structured, searchable changelog entries when committing code. Documents what changed, why, and issues encountered.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": {
     "name": "Jonathan Edwards",
-    "url": "https://github.com/justfinethanku"
+    "url": "https://github.com/justfinethanku",
+    "email": "jon@contentionmedia.com"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/justfinethanku/cc-changelog-plugin"
-  },
+  "repository": "https://github.com/justfinethanku/cc-changelog-plugin",
   "license": "MIT",
   "keywords": [
     "git",
@@ -18,5 +16,6 @@
     "documentation",
     "commit",
     "workflow"
-  ]
+  ],
+  "homepage": "https://github.com/justfinethanku/cc-changelog-plugin"
 }

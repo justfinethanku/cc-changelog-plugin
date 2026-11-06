@@ -159,15 +159,43 @@ Add project-specific keywords as needed - they're automatically added to the voc
 6. **Commits reviewed files**: Selected code + generated changelog files together; unrelated staged work stays staged
 7. **Optional push**: Prompts to push to remote
 
+## Plugin structure
+
+The marketplace installs this repository root (`"source": "./"`). The root
+`.claude-plugin/plugin.json` owns the plugin metadata and release version;
+`skills/commit/SKILL.md` contains the skill. Keep the marketplace entry pointed
+at the root so marketplace installation and direct plugin loading use the same
+manifest. The marketplace entry only supplies the name, source and listing
+summary. In Claude Code 2.1.318, the installed skill is listed as `commit`
+(the directory name), and the plugin is displayed as Git Changelog. Conversational
+activation still uses the description in `SKILL.md`.
+
+The skill runs through Claude Code's tools: it reads Git changes and changelog
+entries, writes the new entry and index, then stages and commits the reviewed
+files. There is no background hook or bundled generation service.
+
 ## Contributing
 
 Issues and PRs welcome at: https://github.com/justfinethanku/cc-changelog-plugin
 
-Run the scoped commit regression tests with Git, Bash and Python 3:
+Run the regression tests with Git, Bash and Python 3:
 
 ```bash
 python3 -m unittest discover -s tests -v
 ```
+
+With the Claude Code CLI installed, the suite also validates the package and
+installs it from a local marketplace in a temporary configuration directory. It
+checks the loaded skill inventory without making model requests or changing your
+installed plugins. Without the CLI, that integration test is skipped. Validate
+the manifests directly from the repository root with:
+
+```bash
+claude plugin validate .
+```
+
+See the [Claude Code plugin manifest reference](https://code.claude.com/docs/en/plugins-reference)
+for the standard layout and metadata fields.
 
 ## License
 
