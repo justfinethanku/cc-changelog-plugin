@@ -3,7 +3,9 @@
 import os
 from pathlib import Path
 import re
+import selectors
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -264,6 +266,64 @@ class CommitWorkflowTests(GitFixture):
         before = self.git("rev-parse", "HEAD")
         self.assertNotEqual(self.scoped_commit([], check=False).returncode, 0)
         self.assertEqual(self.git("rev-parse", "HEAD"), before)
+
+    def test_live_index_lock_preserves_partial_index_and_allows_same_entry_retry(self):
+        self.write("other.txt", "original\n")
+        self.scoped_commit(["other.txt"])
+        self.write("other.txt", "someone else's staged revision\n")
+        self.git("add", "--", "other.txt")
+        self.write("other.txt", "someone else's later working revision\n")
+        unrelated = self.git("ls-files", "--stage", "--", "other.txt")
+        entry = "changelog/entry.md"
+
+        for phase in ("stage", "commit"):
+            with self.subTest(phase=phase):
+                self.write("app.txt", f"requested {phase} change\n")
+                self.write(entry, f"# Same operation after {phase} rejection\n")
+                setup = 'commit_paths=("app.txt" "changelog/entry.md")\ncommit_message="retry"\n'
+                if phase == "commit":
+                    self.run_command(["bash", "-c", setup + command_block("scoped-stage")])
+                before = self.git("rev-parse", "HEAD")
+                index = self.git("ls-files", "--stage")
+                # A separate live process owns a synthetic lock until released.
+                # Avoid sleeps/races: it signals after exclusive creation.
+                lock = self.root / ".git/index.lock"
+                owner_code = (
+                    "import pathlib,sys\n"
+                    "p=pathlib.Path(sys.argv[1])\n"
+                    "with p.open('xb') as f: f.write(b'other-operation-lock')\n"
+                    "print('ready', flush=True)\n"
+                    "try: sys.stdin.read()\n"
+                    "finally: p.unlink(missing_ok=True)\n"
+                )
+                with subprocess.Popen([sys.executable, "-c", owner_code, str(lock)],
+                                      stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                      stderr=subprocess.PIPE, text=True) as owner:
+                    try:
+                        with selectors.DefaultSelector() as ready:
+                            ready.register(owner.stdout, selectors.EVENT_READ)
+                            self.assertTrue(ready.select(timeout=5), "Lock owner did not start")
+                            self.assertEqual(owner.stdout.readline().strip(), "ready")
+                        result = self.run_command([
+                            "bash", "-c", setup + command_block("scoped-" + phase)
+                        ], check=False)
+                        self.assertNotEqual(result.returncode, 0)
+                        self.assertIn("index.lock", result.stderr)
+                        self.assertIsNone(owner.poll())
+                        self.assertEqual(lock.read_bytes(), b"other-operation-lock")
+                        self.assertEqual(self.git("rev-parse", "HEAD"), before)
+                        self.assertEqual(self.git("ls-files", "--stage"), index)
+                    finally:
+                        owner.communicate(input="", timeout=5)
+                self.assertEqual(owner.returncode, 0)
+                self.assertFalse(lock.exists())
+                self.scoped_commit(["app.txt", entry])
+                self.assertEqual(self.git("show", "HEAD:app.txt"), f"requested {phase} change\n")
+                self.assertEqual(self.git("ls-files", "--stage", "--", "other.txt"), unrelated)
+                self.assertEqual((self.root / "other.txt").read_text(),
+                                 "someone else's later working revision\n")
+                self.assertEqual(list((self.root / "changelog").glob("*.md")),
+                                 [self.root / entry])
 
 
 if __name__ == "__main__":

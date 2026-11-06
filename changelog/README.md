@@ -13,6 +13,10 @@ This directory contains detailed changelog entries for each development session.
 
 ### 2026-11
 
+#### [2026-11-06-1743-lock-and-push-hook-tests.md](2026-11-06-1743-lock-and-push-hook-tests.md)
+Test lock ownership and local push rejection recovery
+**Keywords**: `[TESTING]`
+
 #### [2026-11-06-1740-local-commit-recovery.md](2026-11-06-1740-local-commit-recovery.md)
 Resume local commits from their existing operation state
 **Keywords**: `[REFACTOR]` `[DOCUMENTATION]` `[TESTING]`
@@ -67,10 +71,10 @@ Quick reference for finding entries by topic:
 - **[README]** (1 entry): 2025-01-22-1415
 - **[REFACTOR]** (2 entries): 2026-11-06-1740, 2026-11-06-0423
 - **[SECURITY]** (2 entries): 2026-11-06-1715, 2026-11-06-0405
-- **[TESTING]** (7 entries): 2026-11-06-1740, 2026-11-06-1715, 2026-11-06-0510, 2026-11-06-0500, 2026-11-06-0436, 2026-11-06-0423, 2026-11-06-0405
+- **[TESTING]** (8 entries): 2026-11-06-1743, 2026-11-06-1740, 2026-11-06-1715, 2026-11-06-0510, 2026-11-06-0500, 2026-11-06-0436, 2026-11-06-0423, 2026-11-06-0405
 
 ## Statistics
 
-- **Total Entries**: 9
+- **Total Entries**: 10
 - **Date Range**: 2025-01-22 to 2026-11-06
-- **Most Used Keywords**: TESTING (7), PLUGIN (6)
+- **Most Used Keywords**: TESTING (8), PLUGIN (6)
