@@ -13,6 +13,10 @@ This directory contains detailed changelog entries for each development session.
 
 ### 2026-11
 
+#### [2026-11-06-0436-commit-behavior-tests.md](2026-11-06-0436-commit-behavior-tests.md)
+Test commit contents and failure recovery
+**Keywords**: `[TESTING]`
+
 #### [2026-11-06-0423-plugin-packaging.md](2026-11-06-0423-plugin-packaging.md)
 Use one plugin package and release manifest
 **Keywords**: `[CONFIGURATION]` `[PLUGIN]` `[REFACTOR]` `[TESTING]`
@@ -46,10 +50,10 @@ Quick reference for finding entries by topic:
 - **[REFACTOR]** (1 entry): 2026-11-06-0423
 - **[README]** (1 entry): 2025-01-22-1415
 - **[SECURITY]** (1 entry): 2026-11-06-0405
-- **[TESTING]** (2 entries): 2026-11-06-0423, 2026-11-06-0405
+- **[TESTING]** (3 entries): 2026-11-06-0436, 2026-11-06-0423, 2026-11-06-0405
 
 ## Statistics
 
-- **Total Entries**: 4
+- **Total Entries**: 5
 - **Date Range**: 2025-01-22 to 2026-11-06
-- **Most Used Keywords**: DOCUMENTATION (3), PLUGIN (3)
+- **Most Used Keywords**: DOCUMENTATION (3), PLUGIN (3), TESTING (3)

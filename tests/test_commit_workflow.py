@@ -37,7 +37,7 @@ class CommitWorkflowTests(unittest.TestCase):
 
     def run_command(self, args, check=True):
         return subprocess.run(args, cwd=self.root, env=self.env, capture_output=True,
-                              text=True, check=check)
+                              text=True, check=check, timeout=15)
 
     def git(self, *args):
         return self.run_command(["git", *args]).stdout
@@ -96,6 +96,88 @@ class CommitWorkflowTests(unittest.TestCase):
         self.scoped_commit(["app.txt", "replacement.txt"])
         self.assertEqual(self.committed_paths(), {"app.txt", "replacement.txt"})
         self.assertNotIn("app.txt", self.git("ls-tree", "--name-only", "HEAD").splitlines())
+
+    def test_commit_contains_reviewed_working_tree_contents(self):
+        # The skill promises whole selected files, even if their index is older.
+        self.write("app.txt", "intermediate staged revision\n")
+        self.git("add", "--", "app.txt")
+        final = "reviewed final revision\nUnicode: café 日本語\n"
+        self.write("app.txt", final)
+        entry = "# Document the final revision\n**Keywords:** [TESTING]\n"
+        self.write("changelog/entry.md", entry)
+        self.scoped_commit(["app.txt", "changelog/entry.md"])
+        self.assertEqual(self.git("show", "HEAD:app.txt"), final)
+        self.assertEqual(self.git("show", "HEAD:changelog/entry.md"), entry)
+        self.assertEqual(self.git("diff", "HEAD", "--", "app.txt"), "")
+        self.assertEqual(self.git("diff", "--cached", "--", "app.txt"), "")
+
+    def test_already_staged_change_is_committed(self):
+        final = "ready in the index\n"
+        self.write("app.txt", final)
+        self.git("add", "--", "app.txt")
+        self.assertEqual(self.git("diff", "--", "app.txt"), "")
+        self.scoped_commit(["app.txt"])
+        self.assertEqual(self.git("show", "HEAD:app.txt"), final)
+        self.assertEqual(self.git("status", "--porcelain"), "")
+
+    def test_first_commit_creates_code_and_changelog(self):
+        # An unborn HEAD must work too: first-time setup is a documented flow.
+        self.root = self.root / "fresh-repository"
+        self.root.mkdir()
+        self.git("init", "-q")
+        self.git("config", "core.hooksPath", str(self.root / "no-hooks"))
+        files = {"app.txt": "first version\n",
+                 "changelog/.changelog-keywords.txt": "[TESTING]\n",
+                 "changelog/entry.md": "# First entry\n",
+                 "changelog/README.md": "# Index\n"}
+        for name, content in files.items():
+            self.write(name, content)
+        self.scoped_commit(list(files))
+        self.assertEqual(self.git("rev-list", "--count", "HEAD").strip(), "1")
+        self.assertEqual(set(self.git("ls-tree", "-r", "--name-only", "HEAD").splitlines()),
+                         set(files))
+        for name, content in files.items():
+            self.assertEqual(self.git("show", f"HEAD:{name}"), content)
+        self.assertEqual(self.git("status", "--porcelain"), "")
+
+    def test_whitespace_check_failure_stops_before_commit(self):
+        self.write("unrelated.txt", "already staged\n")
+        self.git("add", "--", "unrelated.txt")
+        index_before = self.git("ls-files", "--stage", "--", "unrelated.txt")
+        before = self.git("rev-parse", "HEAD")
+        invalid = "trailing whitespace   \n"
+        self.write("app.txt", invalid)
+        result = self.scoped_commit(["app.txt"], check=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("trailing whitespace", result.stdout + result.stderr)
+        self.assertEqual(self.git("rev-parse", "HEAD"), before)
+        self.assertEqual(self.git("ls-files", "--stage", "--", "unrelated.txt"), index_before)
+        # Staging happened before validation; it is not rolled back by this flow.
+        self.assertEqual(self.git("show", ":app.txt"), invalid)
+        self.assertEqual((self.root / "app.txt").read_text(), invalid)
+
+    def test_rejecting_hook_preserves_head_index_and_work(self):
+        self.write("unrelated.txt", "already staged\n")
+        self.git("add", "--", "unrelated.txt")
+        index_before = self.git("ls-files", "--stage", "--", "unrelated.txt")
+        before = self.git("rev-parse", "HEAD")
+        final = "reviewed but rejected\n"
+        self.write("app.txt", final)
+        self.write("no-hooks/pre-commit", "#!/bin/sh\necho synthetic-hook-rejection >&2\nexit 1\n")
+        (self.root / "no-hooks/pre-commit").chmod(0o755)
+        result = self.scoped_commit(["app.txt"], check=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("synthetic-hook-rejection", result.stderr)
+        self.assertEqual(self.git("rev-parse", "HEAD"), before)
+        self.assertEqual(self.git("ls-files", "--stage", "--", "unrelated.txt"), index_before)
+        self.assertEqual(self.git("show", ":app.txt"), final)
+        self.assertEqual((self.root / "app.txt").read_text(), final)
+        self.assertFalse((self.root / ".git/index.lock").exists())
+        # Removing the synthetic rejection must leave the same work retryable.
+        (self.root / "no-hooks/pre-commit").unlink()
+        self.scoped_commit(["app.txt"])
+        self.assertEqual(self.git("show", "HEAD:app.txt"), final)
+        self.assertEqual(self.git("diff", "--cached", "--name-only").strip(), "unrelated.txt")
 
     def test_failed_staging_does_not_commit_unrelated_index(self):
         self.write("unrelated.txt", "already staged\n")
