@@ -13,6 +13,10 @@ This directory contains detailed changelog entries for each development session.
 
 ### 2026-11
 
+#### [2026-11-06-0500-index-metadata-search.md](2026-11-06-0500-index-metadata-search.md)
+Collect index metadata in batches
+**Keywords**: `[PERFORMANCE]` `[PLUGIN]` `[TESTING]`
+
 #### [2026-11-06-0436-commit-behavior-tests.md](2026-11-06-0436-commit-behavior-tests.md)
 Test commit contents and failure recovery
 **Keywords**: `[TESTING]`
@@ -46,14 +50,15 @@ Quick reference for finding entries by topic:
 - **[DOCUMENTATION]** (3 entries): 2026-11-06-0405, 2025-01-22-1415, 2025-01-22-1345
 - **[GITHUB]** (1 entry): 2025-01-22-1345
 - **[MARKETPLACE]** (1 entry): 2025-01-22-1345
-- **[PLUGIN]** (3 entries): 2026-11-06-0423, 2025-01-22-1415, 2025-01-22-1345
-- **[REFACTOR]** (1 entry): 2026-11-06-0423
+- **[PERFORMANCE]** (1 entry): 2026-11-06-0500
+- **[PLUGIN]** (4 entries): 2026-11-06-0500, 2026-11-06-0423, 2025-01-22-1415, 2025-01-22-1345
 - **[README]** (1 entry): 2025-01-22-1415
+- **[REFACTOR]** (1 entry): 2026-11-06-0423
 - **[SECURITY]** (1 entry): 2026-11-06-0405
-- **[TESTING]** (3 entries): 2026-11-06-0436, 2026-11-06-0423, 2026-11-06-0405
+- **[TESTING]** (4 entries): 2026-11-06-0500, 2026-11-06-0436, 2026-11-06-0423, 2026-11-06-0405
 
 ## Statistics
 
-- **Total Entries**: 5
+- **Total Entries**: 6
 - **Date Range**: 2025-01-22 to 2026-11-06
-- **Most Used Keywords**: DOCUMENTATION (3), PLUGIN (3), TESTING (3)
+- **Most Used Keywords**: PLUGIN (4), TESTING (4)

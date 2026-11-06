@@ -171,8 +171,11 @@ summary. In Claude Code 2.1.318, the installed skill is listed as `commit`
 activation still uses the description in `SKILL.md`.
 
 The skill runs through Claude Code's tools: it reads Git changes and changelog
-entries, writes the new entry and index, then stages and commits the reviewed
-files. There is no background hook or bundled generation service.
+metadata, writes the new entry and index, then stages and commits the reviewed
+files. Index generation searches titles, summaries and keywords in batches;
+entries with unusual layouts get targeted reads. It still rebuilds the complete
+index after edits or merges. There is no background hook or bundled generation
+service.
 
 ## Contributing
 

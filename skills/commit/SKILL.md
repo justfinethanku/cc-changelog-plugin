@@ -91,7 +91,7 @@ You can optionally provide a summary:
 
 6. **Update index**
    - Use Glob to find all `changelog/*.md` files (exclude README.md)
-   - Read each file and parse headers (title, keywords, date)
+   - Collect index metadata with the batched search below; read individual entries only when needed
    - Group entries by month (YYYY-MM)
    - Build keyword index with entry counts
    - Write new README with monthly entries + keyword index
@@ -105,6 +105,33 @@ You can optionally provide a summary:
    - Ask: "Push to remote? (Y/n)"
    - If yes: `git push origin [current-branch]`
    - Show push status
+
+### Collect index metadata
+
+For index generation, use Grep in content mode with filenames and one following
+line of context. If Glob or Grep isn't exposed, use the available shell search
+tools for the same inventory and metadata-only search. For timestamped entries,
+use:
+
+```json
+{
+  "pattern": "^(# |\\*\\*Keywords(?::\\*\\*|\\*\\*:)|## (Session Summary|Keywords)$)",
+  "path": "changelog",
+  "glob": "[0-9][0-9][0-9][0-9]-*.md",
+  "output_mode": "content",
+  "-A": 1
+}
+```
+
+Use the filename for the date and the first heading for the summary. For older
+entries with `## Session Summary` or `## Keywords`, use the following line.
+Keep each result associated with its filename. Process all result pages if the
+tool limits output. If the inventory is truncated, narrow it by month or filename
+prefix until all entries are covered. Reconcile the results with that inventory;
+ignore README.md and nested files. Use targeted Read calls for nonstandard
+filenames, missing metadata, multiline summaries or other unusual layouts before
+writing the complete index. This rebuilds from the entry files after edits or
+merges; there is no metadata cache to invalidate.
 
 ### Scoped Commit Commands
 
@@ -344,9 +371,10 @@ Updates most recent changelog entry instead of creating new one (if continuing s
 ## Tools Used
 
 - **Bash** - Git operations (status, diff, add, commit, push)
-- **Read** - Parse existing changelog entries
+- **Glob** - Inventory changelog entries
+- **Read** - Inspect entries with missing or unusual index metadata
 - **Write** - Create new entries and update index
-- **Grep** - Search for keywords in existing entries (for duplicate detection)
+- **Grep** - Collect index metadata in batches and search existing keywords
 
 ## Error Handling
 
