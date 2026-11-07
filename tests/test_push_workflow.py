@@ -1,9 +1,31 @@
 """Execute the documented push procedure against disposable local bare remotes."""
 
-from test_commit_workflow import GitFixture, command_block
+from pathlib import Path
+import shutil
+import unittest
+
+if __package__:
+    from .test_commit_workflow import GitFixture, command_block
+else:
+    from test_commit_workflow import GitFixture, command_block
+
+
+def available_shells():
+    """Test system shells, Homebrew Bash, and a distinct Bash on PATH."""
+    candidates = [("system_bash", "/bin/bash"), ("system_zsh", "/bin/zsh"),
+                  ("homebrew_bash", "/opt/homebrew/bin/bash"),
+                  ("homebrew_intel_bash", "/usr/local/bin/bash"),
+                  ("path_bash", shutil.which("bash"))]
+    seen = set()
+    for name, path in candidates:
+        if path and Path(path).is_file() and Path(path).resolve() not in seen:
+            seen.add(Path(path).resolve())
+            yield name, path
 
 
 class PushWorkflowTests(GitFixture):
+    shell = "/bin/bash"
+
     def setUp(self):
         super().setUp()
         self.branch = "reviewed-destination"
@@ -16,10 +38,13 @@ class PushWorkflowTests(GitFixture):
         self.scoped_commit(["app.txt"])
         self.reviewed = self.git("rev-parse", "HEAD").strip()
 
-    def push_reviewed(self, commit=None, branch=None, check=True):
-        source = '\n'.join(('reviewed_commit="$1"', 'reviewed_branch="$2"',
-                            command_block("scoped-push")))
-        return self.run_command(["bash", "-c", source, "push-test",
+    def push_reviewed(self, commit=None, branch=None, check=True, conditional=False):
+        block = command_block("scoped-push")
+        if conditional:
+            # Model a caller checking success: errexit is ignored in this context.
+            block = "if " + block + "\nthen exit 0; else exit 1; fi"
+        source = '\n'.join(('reviewed_commit="$1"', 'reviewed_branch="$2"', block))
+        return self.run_command([self.shell, "-c", source, "push-test",
                                  self.reviewed if commit is None else commit,
                                  self.branch if branch is None else branch], check)
 
@@ -84,14 +109,34 @@ class PushWorkflowTests(GitFixture):
         self.assertEqual(self.remote_git("rev-parse", self.branch), self.reviewed)
         self.assertEqual(self.git("rev-parse", "HEAD").strip(), self.initial)
 
-    def test_invalid_snapshot_or_destination_cannot_delete_or_expand_refs(self):
-        for commit, branch in (("", self.branch), ("HEAD", self.branch),
-                               ("0" * 40, self.branch), (self.reviewed, ""),
-                               (self.reviewed, "bad:refs/heads/other"),
-                               (self.reviewed, "*")):
+    def assert_invalid_inputs_refused(self, conditional=False):
+        blob = self.git("rev-parse", "HEAD:app.txt").strip()
+        cases = (("", self.branch), ("HEAD", self.branch), ("0" * 40, self.branch),
+                 (self.reviewed, ""), (self.reviewed, "bad:refs/heads/other"),
+                 (self.reviewed, "*"), (self.reviewed[:12], self.branch),
+                 ("f" * 39, self.branch), ("f" * 41, self.branch),
+                 ("f" * 63, self.branch), ("f" * 65, self.branch),
+                 ("g" * 40, self.branch), ("0" * 64, self.branch),
+                 (blob, self.branch))
+        for number, (commit, branch) in enumerate(cases):
             with self.subTest(commit=commit, branch=branch):
-                self.assertNotEqual(self.push_reviewed(commit, branch, check=False).returncode, 0)
-                self.assertEqual(self.remote_git("rev-parse", self.branch), self.initial)
+                # Isolate cases: a bad push must not cause cascading failures.
+                self.remote = self.root / f"invalid-{number}.git"
+                self.git("init", "--bare", "-q", str(self.remote))
+                self.git("remote", "set-url", "origin", str(self.remote))
+                self.git("push", "origin", f"{self.initial}:refs/heads/{self.branch}")
+                before = self.remote_git("for-each-ref", "--format=%(refname) %(objectname)")
+                result = self.push_reviewed(commit, branch, check=False, conditional=conditional)
+                # Check every ref even if the block incorrectly reports success.
+                self.assertEqual(self.remote_git("for-each-ref", "--format=%(refname) %(objectname)"),
+                                 before, result.stdout + result.stderr)
+                self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_invalid_snapshot_or_destination_cannot_delete_or_expand_refs(self):
+        self.assert_invalid_inputs_refused()
+
+    def test_invalid_inputs_refused_when_caller_checks_status(self):
+        self.assert_invalid_inputs_refused(conditional=True)
 
     def test_local_push_hook_rejection_preserves_partial_index_and_retry_snapshot(self):
         self.write("other.txt", "tracked original\n")
@@ -131,3 +176,11 @@ class PushWorkflowTests(GitFixture):
         self.assertEqual(self.git("status", "--porcelain"), status)
         self.assertEqual((self.root / "other.txt").read_text(), "later unstaged revision\n")
         self.assertEqual((self.root / "local-only.txt").read_text(), "untracked revision\n")
+
+
+def load_tests(loader, tests, pattern):
+    suite = unittest.TestSuite()
+    for name, shell in available_shells():
+        case = type("PushWorkflowTests_" + name, (PushWorkflowTests,), {"shell": shell})
+        suite.addTests(loader.loadTestsFromTestCase(case))
+    return suite
