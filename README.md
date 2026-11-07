@@ -21,7 +21,8 @@ changelog in conversation or invoke the installed plugin skill explicitly.
   Installing and inspecting the plugin does not make a model request.
 
 There is no `npm install`, Python environment, or separate API key for this
-plugin. Python 3 is needed only to run the contributor tests.
+plugin. Python 3 on Linux or macOS is required for the bundled transaction
+helper and tests.
 
 ## Installation
 
@@ -162,11 +163,11 @@ monthly groups, summaries, and a keyword index. Search it with your editor's
 find command for tags such as `[DATABASE]`, `[BUG_FIX]`, or `[DOCUMENTATION]`.
 The skill suggests tags from changed paths and can add project-specific tags.
 
-Separate entries reduce contention, but timestamps have minute precision and
-the same timestamp and slug can collide. Inspect an existing destination before
-writing and choose a distinct slug for a different session. The shared
-`changelog/README.md` and keyword file can also conflict. After reconciling entry
-files in a merge, ask Claude to regenerate the index from all retained entries.
+Entry allocation is exclusive: identical minute/slug inputs receive numeric
+suffixes. A persistent `changelog/.write.lock` serializes entry creation, inventory
+and atomic index replacement. Keep it untracked. Commits use a private reviewed
+index snapshot, so later working-tree edits and unrelated staging survive.
+After reconciling files across branches, rebuild the index under the same lock.
 
 ## Update or disable the plugin
 
@@ -259,6 +260,19 @@ Run the regression tests from the repository root with Git, Bash and Python 3:
 ```bash
 python3 -m unittest discover -s tests -v
 ```
+
+The race tests execute the marked shell blocks from the installed skill source
+in disposable repositories. To verify the expected failures against main:
+
+```bash
+python3 tests/verify_main_races.py origin/main
+```
+
+This requires four assertion failures (entry collision, stale index, late edit,
+and retry). Main's generation instructions are prose, so its baseline uses an
+explicit shell adapter for those create/inventory/write steps. Its commit blocks
+are executed unchanged. The fixed generation block calls the bundled helper;
+the tests pause real writers at allocation and index replacement boundaries.
 
 With the Claude Code CLI installed, the suite also validates the package and
 installs it from a local marketplace in a temporary configuration directory. It

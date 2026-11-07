@@ -28,6 +28,8 @@ class GitFixture(unittest.TestCase):
         self.root = Path(self.sandbox.name)
         # Ignore the caller's Git identity, index and hooks. Never touch a remote.
         self.env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+        self.env["commit_helper"] = str(SKILL.parent / "scripts/workflow.py")
+        self.env["review_state"] = str(self.root / "review-unused")
         self.env.update({"GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull,
                          "GIT_AUTHOR_NAME": "Test", "GIT_AUTHOR_EMAIL": "test@example.invalid",
                          "GIT_COMMITTER_NAME": "Test", "GIT_COMMITTER_EMAIL": "test@example.invalid"})
@@ -53,7 +55,9 @@ class GitFixture(unittest.TestCase):
         # The paths and message enter Bash as arguments, never executable source.
         source = '\n'.join((
             'set -e', 'commit_message="$1"', 'shift', 'commit_paths=("$@")',
-            command_block("scoped-stage"), command_block("scoped-commit")))
+            command_block("scoped-stage"),
+            command_block("scoped-review") if '<!-- scoped-review -->' in SKILL.read_text() else ':',
+            command_block("scoped-commit")))
         return self.run_command(["bash", "-c", source, "scoped-test", message, *paths], check)
 
     def committed_paths(self):
@@ -282,7 +286,9 @@ class CommitWorkflowTests(GitFixture):
                 self.write(entry, f"# Same operation after {phase} rejection\n")
                 setup = 'commit_paths=("app.txt" "changelog/entry.md")\ncommit_message="retry"\n'
                 if phase == "commit":
-                    self.run_command(["bash", "-c", setup + command_block("scoped-stage")])
+                    self.run_command(["bash", "-c", setup + command_block("scoped-stage") +
+                                      '\nprintf "%s" "$review_state" > saved-review-state'])
+                    setup += 'review_state=$(cat saved-review-state)\n'
                 before = self.git("rev-parse", "HEAD")
                 index = self.git("ls-files", "--stage")
                 # A separate live process owns a synthetic lock until released.

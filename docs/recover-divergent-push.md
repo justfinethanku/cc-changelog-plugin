@@ -123,7 +123,7 @@ and that a merge is allowed by its contribution policy.
    git show --stat --oneline "$reviewed_commit"
    ```
 
-   Use a normal merge commit here: the skill's partial `commit --only` procedure
+   Use a normal merge commit here: the skill's scoped snapshot procedure
    cannot complete an in-progress merge. This new SHA replaces the old saved
    push source only after you review its contents and outgoing history.
 
