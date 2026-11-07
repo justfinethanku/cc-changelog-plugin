@@ -20,9 +20,11 @@ changelog in conversation or invoke the installed plugin skill explicitly.
 - A working Claude Code sign-in or provider configuration for actual skill use.
   Installing and inspecting the plugin does not make a model request.
 
-There is no `npm install`, Python environment, or separate API key for this
-plugin. Python 3 on Linux or macOS is required for the bundled transaction
-helper and tests.
+Python 3.8+ on Linux or macOS is required for changelog generation, amendment
+and index publication; the helper uses the standard library, including
+`fcntl.flock`. Windows is not supported. Committing uses Bash and Git alone,
+with stock commands available before Git 2.36. No `npm install`, virtual
+environment or separate API key is needed. The tests also require Python 3.
 
 ## Installation
 
@@ -164,10 +166,14 @@ find command for tags such as `[DATABASE]`, `[BUG_FIX]`, or `[DOCUMENTATION]`.
 The skill suggests tags from changed paths and can add project-specific tags.
 
 Entry allocation is exclusive: identical minute/slug inputs receive numeric
-suffixes. A persistent `changelog/.write.lock` serializes entry creation, inventory
-and atomic index replacement. Keep it untracked. Commits use a private reviewed
-index snapshot, so later working-tree edits and unrelated staging survive.
-After reconciling files across branches, rebuild the index under the same lock.
+suffixes. A persistent lock at `$(git rev-parse --git-common-dir)/changelog.lock`
+serializes allocation and index publication across linked worktrees. The model
+writes the README, preserving its existing layout. The helper atomically publishes
+that draft only if every current entry basename appears; otherwise it refuses and
+asks for a complete rebuild. See [locked generation](skills/commit/SKILL.md#locked-generation)
+for the draft and rebuild commands. Commits use a private reviewed index snapshot,
+so later working-tree edits and unrelated staging survive. After merging entries,
+prepare a complete private index draft and run the same rebuild command.
 
 ## Update or disable the plugin
 
@@ -245,9 +251,10 @@ summary. In Claude Code 2.1.318, the installed skill is listed as `commit`
 activation still uses the description in `SKILL.md`.
 
 The skill runs through Claude Code's tools: it reads Git changes and changelog
-metadata, writes the new entry and index, then stages and commits the reviewed
-files. Index generation searches titles, summaries and keywords in batches;
-entries with unusual layouts get targeted reads. It still rebuilds the complete
+metadata, writes private entry and index drafts, publishes them through the locked
+helper, then stages and commits the reviewed files. Index generation searches
+titles, summaries and keywords in batches; entries with unusual layouts get
+targeted reads. It still rebuilds the complete
 index after edits or merges. There is no background hook or bundled generation
 service.
 
@@ -261,18 +268,12 @@ Run the regression tests from the repository root with Git, Bash and Python 3:
 python3 -m unittest discover -s tests -v
 ```
 
-The race tests execute the marked shell blocks from the installed skill source
-in disposable repositories. To verify the expected failures against main:
-
-```bash
-python3 tests/verify_main_races.py origin/main
-```
-
-This requires four assertion failures (entry collision, stale index, late edit,
-and retry). Main's generation instructions are prose, so its baseline uses an
-explicit shell adapter for those create/inventory/write steps. Its commit blocks
-are executed unchanged. The fixed generation block calls the bundled helper;
-the tests pause real writers at allocation and index replacement boundaries.
+The regression tests execute the marked shell blocks from the installed skill
+source in disposable repositories. They cover private-index review/commit,
+rejection and retry, post-review edits and staging, exclusive entry allocation,
+shared worktree locks, and refusal to publish stale model-written indexes.
+The PR description records the fail-on-main evidence; no baseline adapter ships
+with the tests.
 
 With the Claude Code CLI installed, the suite also validates the package and
 installs it from a local marketplace in a temporary configuration directory. It

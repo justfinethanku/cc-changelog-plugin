@@ -56,7 +56,7 @@ class GitFixture(unittest.TestCase):
         source = '\n'.join((
             'set -e', 'commit_message="$1"', 'shift', 'commit_paths=("$@")',
             command_block("scoped-stage"),
-            command_block("scoped-review") if '<!-- scoped-review -->' in SKILL.read_text() else ':',
+            command_block("scoped-review"),
             command_block("scoped-commit")))
         return self.run_command(["bash", "-c", source, "scoped-test", message, *paths], check)
 
@@ -271,7 +271,7 @@ class CommitWorkflowTests(GitFixture):
         self.assertNotEqual(self.scoped_commit([], check=False).returncode, 0)
         self.assertEqual(self.git("rev-parse", "HEAD"), before)
 
-    def test_live_index_lock_preserves_partial_index_and_allows_same_entry_retry(self):
+    def test_live_real_index_lock_preserves_work_during_stage_or_private_commit(self):
         self.write("other.txt", "original\n")
         self.scoped_commit(["other.txt"])
         self.write("other.txt", "someone else's staged revision\n")
@@ -313,17 +313,22 @@ class CommitWorkflowTests(GitFixture):
                         result = self.run_command([
                             "bash", "-c", setup + command_block("scoped-" + phase)
                         ], check=False)
-                        self.assertNotEqual(result.returncode, 0)
-                        self.assertIn("index.lock", result.stderr)
                         self.assertIsNone(owner.poll())
                         self.assertEqual(lock.read_bytes(), b"other-operation-lock")
-                        self.assertEqual(self.git("rev-parse", "HEAD"), before)
                         self.assertEqual(self.git("ls-files", "--stage"), index)
+                        if phase == "stage":
+                            self.assertIn("index.lock", result.stderr)
+                            self.assertNotEqual(result.returncode, 0)
+                            self.assertEqual(self.git("rev-parse", "HEAD"), before)
+                        else:
+                            self.assertEqual(result.returncode, 0, result.stderr)
+                            self.assertNotEqual(self.git("rev-parse", "HEAD"), before)
                     finally:
                         owner.communicate(input="", timeout=5)
                 self.assertEqual(owner.returncode, 0)
                 self.assertFalse(lock.exists())
-                self.scoped_commit(["app.txt", entry])
+                if phase == "stage":
+                    self.scoped_commit(["app.txt", entry])
                 self.assertEqual(self.git("show", "HEAD:app.txt"), f"requested {phase} change\n")
                 self.assertEqual(self.git("ls-files", "--stage", "--", "other.txt"), unrelated)
                 self.assertEqual((self.root / "other.txt").read_text(),
