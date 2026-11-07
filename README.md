@@ -272,6 +272,16 @@ The regression tests execute the marked shell blocks from the installed skill
 source in disposable repositories. They cover private-index review/commit,
 rejection and retry, post-review edits and staging, exclusive entry allocation,
 shared worktree locks, and refusal to publish stale model-written indexes.
+Push tests run the documented block under each available system Bash
+(`/bin/bash`), zsh (`/bin/zsh`), Homebrew Bash (`/opt/homebrew/bin/bash` or
+`/usr/local/bin/bash`), and a distinct Bash on `PATH`. Duplicate paths are tested
+once. Each invalid input gets a fresh local bare remote, both as a standalone
+block and inside a caller's `if` condition. Run just this shell matrix with:
+
+```bash
+python3 -m unittest tests.test_push_workflow -v
+```
+
 The PR description records the fail-on-main evidence; no baseline adapter ships
 with the tests.
 

@@ -353,14 +353,28 @@ source even if another process advances or switches the local branch.
 <!-- scoped-push -->
 ```bash
 (
-    set -e
-    [[ "$reviewed_commit" =~ ^([0-9a-f]{40}|[0-9a-f]{64})$ ]]
-    git cat-file -e "${reviewed_commit}^{commit}"
-    git check-ref-format "refs/heads/$reviewed_branch"
+    # Explicit exits work even when the caller tests this block's status.
+    case "$reviewed_commit" in
+        ''|*[!0123456789abcdef]*)
+            echo 'Expected a full lowercase commit object ID.' >&2
+            exit 1 ;;
+    esac
+    case "${#reviewed_commit}" in
+        40|64) ;;
+        *) echo 'Expected a full lowercase commit object ID.' >&2; exit 1 ;;
+    esac
+    git cat-file -e "${reviewed_commit}^{commit}" || exit 1
+    git check-ref-format "refs/heads/$reviewed_branch" || exit 1
     git -c remote.origin.mirror=false push --no-follow-tags --recurse-submodules=no \
-        origin "$reviewed_commit:refs/heads/$reviewed_branch"
+        origin "${reviewed_commit}:refs/heads/${reviewed_branch}"
 )
 ```
+
+The validation uses POSIX shell constructs supported by Bash 3.2, Bash 5 and
+zsh. Each failed check exits explicitly: Bash 3.2 does not apply `set -e` to a
+failed `[[ ... ]]`, and callers testing a block's status can suppress `set -e`
+in newer shells too. No regex engine or external text tools are needed. Braces
+keep zsh from treating the refspec colon as a parameter modifier.
 
 This updates the named branch without force, extra tags, a mirror push or
 submodule pushes. A remote rejection leaves the local commit intact. For an
