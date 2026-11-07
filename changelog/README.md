@@ -13,6 +13,10 @@ This directory contains detailed changelog entries for each development session.
 
 ### 2026-11
 
+#### [2026-11-06-1900-changelog-races.md](2026-11-06-1900-changelog-races.md)
+Preserve concurrent entries and reviewed commit snapshots
+**Keywords**: `[BUG_FIX]` `[PLUGIN]` `[TESTING]`
+
 #### [2026-11-06-1810-divergent-push-recovery.md](2026-11-06-1810-divergent-push-recovery.md)
 Document divergent push recovery with a separate worktree
 **Keywords**: `[DOCUMENTATION]` `[TESTING]`
@@ -63,7 +67,7 @@ Set up GitHub repository and configured Claude Code plugin marketplace for the c
 
 Quick reference for finding entries by topic:
 
-- **[BUG_FIX]** (3 entries): 2026-11-06-1715, 2026-11-06-0510, 2026-11-06-0405
+- **[BUG_FIX]** (4 entries): 2026-11-06-1900, 2026-11-06-1715, 2026-11-06-0510, 2026-11-06-0405
 - **[CHANGELOG]** (1 entry): 2025-01-22-1415
 - **[CONFIGURATION]** (2 entries): 2026-11-06-0423, 2025-01-22-1345
 - **[DEPLOYMENT]** (1 entry): 2025-01-22-1345
@@ -71,14 +75,14 @@ Quick reference for finding entries by topic:
 - **[GITHUB]** (1 entry): 2025-01-22-1345
 - **[MARKETPLACE]** (1 entry): 2025-01-22-1345
 - **[PERFORMANCE]** (1 entry): 2026-11-06-0500
-- **[PLUGIN]** (6 entries): 2026-11-06-1715, 2026-11-06-0510, 2026-11-06-0500, 2026-11-06-0423, 2025-01-22-1415, 2025-01-22-1345
+- **[PLUGIN]** (7 entries): 2026-11-06-1900, 2026-11-06-1715, 2026-11-06-0510, 2026-11-06-0500, 2026-11-06-0423, 2025-01-22-1415, 2025-01-22-1345
 - **[README]** (1 entry): 2025-01-22-1415
 - **[REFACTOR]** (2 entries): 2026-11-06-1740, 2026-11-06-0423
 - **[SECURITY]** (2 entries): 2026-11-06-1715, 2026-11-06-0405
-- **[TESTING]** (9 entries): 2026-11-06-1810, 2026-11-06-1743, 2026-11-06-1740, 2026-11-06-1715, 2026-11-06-0510, 2026-11-06-0500, 2026-11-06-0436, 2026-11-06-0423, 2026-11-06-0405
+- **[TESTING]** (10 entries): 2026-11-06-1900, 2026-11-06-1810, 2026-11-06-1743, 2026-11-06-1740, 2026-11-06-1715, 2026-11-06-0510, 2026-11-06-0500, 2026-11-06-0436, 2026-11-06-0423, 2026-11-06-0405
 
 ## Statistics
 
-- **Total Entries**: 11
+- **Total Entries**: 12
 - **Date Range**: 2025-01-22 to 2026-11-06
-- **Most Used Keywords**: TESTING (9), DOCUMENTATION (6), PLUGIN (6)
+- **Most Used Keywords**: TESTING (10), PLUGIN (7), DOCUMENTATION (6)

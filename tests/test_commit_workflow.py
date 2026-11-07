@@ -28,6 +28,8 @@ class GitFixture(unittest.TestCase):
         self.root = Path(self.sandbox.name)
         # Ignore the caller's Git identity, index and hooks. Never touch a remote.
         self.env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+        self.env["commit_helper"] = str(SKILL.parent / "scripts/workflow.py")
+        self.env["review_state"] = str(self.root / "review-unused")
         self.env.update({"GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull,
                          "GIT_AUTHOR_NAME": "Test", "GIT_AUTHOR_EMAIL": "test@example.invalid",
                          "GIT_COMMITTER_NAME": "Test", "GIT_COMMITTER_EMAIL": "test@example.invalid"})
@@ -53,7 +55,9 @@ class GitFixture(unittest.TestCase):
         # The paths and message enter Bash as arguments, never executable source.
         source = '\n'.join((
             'set -e', 'commit_message="$1"', 'shift', 'commit_paths=("$@")',
-            command_block("scoped-stage"), command_block("scoped-commit")))
+            command_block("scoped-stage"),
+            command_block("scoped-review"),
+            command_block("scoped-commit")))
         return self.run_command(["bash", "-c", source, "scoped-test", message, *paths], check)
 
     def committed_paths(self):
@@ -267,7 +271,7 @@ class CommitWorkflowTests(GitFixture):
         self.assertNotEqual(self.scoped_commit([], check=False).returncode, 0)
         self.assertEqual(self.git("rev-parse", "HEAD"), before)
 
-    def test_live_index_lock_preserves_partial_index_and_allows_same_entry_retry(self):
+    def test_live_real_index_lock_preserves_work_during_stage_or_private_commit(self):
         self.write("other.txt", "original\n")
         self.scoped_commit(["other.txt"])
         self.write("other.txt", "someone else's staged revision\n")
@@ -282,7 +286,9 @@ class CommitWorkflowTests(GitFixture):
                 self.write(entry, f"# Same operation after {phase} rejection\n")
                 setup = 'commit_paths=("app.txt" "changelog/entry.md")\ncommit_message="retry"\n'
                 if phase == "commit":
-                    self.run_command(["bash", "-c", setup + command_block("scoped-stage")])
+                    self.run_command(["bash", "-c", setup + command_block("scoped-stage") +
+                                      '\nprintf "%s" "$review_state" > saved-review-state'])
+                    setup += 'review_state=$(cat saved-review-state)\n'
                 before = self.git("rev-parse", "HEAD")
                 index = self.git("ls-files", "--stage")
                 # A separate live process owns a synthetic lock until released.
@@ -307,17 +313,22 @@ class CommitWorkflowTests(GitFixture):
                         result = self.run_command([
                             "bash", "-c", setup + command_block("scoped-" + phase)
                         ], check=False)
-                        self.assertNotEqual(result.returncode, 0)
-                        self.assertIn("index.lock", result.stderr)
                         self.assertIsNone(owner.poll())
                         self.assertEqual(lock.read_bytes(), b"other-operation-lock")
-                        self.assertEqual(self.git("rev-parse", "HEAD"), before)
                         self.assertEqual(self.git("ls-files", "--stage"), index)
+                        if phase == "stage":
+                            self.assertIn("index.lock", result.stderr)
+                            self.assertNotEqual(result.returncode, 0)
+                            self.assertEqual(self.git("rev-parse", "HEAD"), before)
+                        else:
+                            self.assertEqual(result.returncode, 0, result.stderr)
+                            self.assertNotEqual(self.git("rev-parse", "HEAD"), before)
                     finally:
                         owner.communicate(input="", timeout=5)
                 self.assertEqual(owner.returncode, 0)
                 self.assertFalse(lock.exists())
-                self.scoped_commit(["app.txt", entry])
+                if phase == "stage":
+                    self.scoped_commit(["app.txt", entry])
                 self.assertEqual(self.git("show", "HEAD:app.txt"), f"requested {phase} change\n")
                 self.assertEqual(self.git("ls-files", "--stage", "--", "other.txt"), unrelated)
                 self.assertEqual((self.root / "other.txt").read_text(),

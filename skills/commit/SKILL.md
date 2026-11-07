@@ -70,8 +70,9 @@ Before starting or resuming, follow [operation state and local recovery](#operat
 
 2. **First-time setup check**
    - Look for `changelog/` directory
-   - If missing, create full structure
-   - Add setup entry to changelog
+   - If missing, let locked generation create the directory and initial index
+   - Prepare the default keyword vocabulary as a selected file; never overwrite an existing vocabulary
+   - Include setup details in the first allocated entry
 
 3. **Analyze changes**
    - Run `git diff --stat` for file summary
@@ -85,18 +86,16 @@ Before starting or resuming, follow [operation state and local recovery](#operat
    - Keywords (show suggestions, allow editing)
    - Dependencies added (if package.json changed)
 
-5. **Generate changelog entry**
-   - Create `changelog/YYYY-MM-DD-HHMM-descriptive-slug.md`
-   - Fill template with user responses
-   - Include git diff summary
-   - Add timestamp and session duration estimate
+5. **Generate changelog entry and index**
+   - Write the filled entry template to a private draft outside the repository
+   - Run the locked generation command below with the minute timestamp and slug
+   - Record the returned path (a numeric suffix is allocated on collision)
+   - Inventory all entries and write a complete private README draft, preserving the existing layout
+   - Publish it with the rebuild command below; if an entry is missing, rebuild the draft and retry
 
-6. **Update index**
-   - Use Glob to find all `changelog/*.md` files (exclude README.md)
-   - Collect index metadata with the batched search below; read individual entries only when needed
-   - Group entries by month (YYYY-MM)
-   - Build keyword index with entry counts
-   - Write new README with monthly entries + keyword index
+6. **Review generated files**
+   - Inspect the allocated entry and index; include their exact paths in the scope
+   - Use the metadata search below to investigate unusual or missing metadata
 
 7. **Commit the reviewed files**
    - Follow the scoped commit commands below, including the exact changelog files just generated
@@ -109,9 +108,69 @@ Before starting or resuming, follow [operation state and local recovery](#operat
    - If yes, follow the scoped push procedure below with the saved SHA and branch
    - Report the push result; keep failed pushes separate from commit creation
 
+### Locked generation
+
+Python 3.8+ on Linux or macOS is required only for changelog generation,
+amendment and index publication. Committing uses Bash and Git alone. The helper
+uses `fcntl.flock`; Windows is not supported. Resolve `commit_helper` to the
+absolute `scripts/workflow.py` beside this installed SKILL.md (for a plugin,
+`${CLAUDE_PLUGIN_ROOT}/skills/commit/scripts/workflow.py`). Keep that absolute
+path across tool calls. Write Markdown to `entry_draft` with a file-writing tool;
+pass paths as quoted arguments, never interpolate entry text into shell source.
+Set `entry_name` to a basename such as `2026-11-06-0900-example.md`.
+
+<!-- changelog-generate -->
+```bash
+python3 "$commit_helper" generate --entry-name "$entry_name" --entry-draft "$entry_draft"
+```
+
+The helper allocates the entry with `O_EXCL` and numeric collision suffixes,
+including when the original name is a symlink. It locks
+`$(git rev-parse --git-common-dir)/changelog.lock`, outside the working tree and
+shared across linked worktrees. Keep this persistent lock file; removing it can
+split concurrent owners. Paths under `changelog/` are resolved from
+`git rev-parse --show-toplevel`, so generation also works from subdirectories.
+
+**The model writes the README (index option a).** After allocation, inventory
+`changelog/*.md` excluding README.md and collect metadata as described below.
+Write a complete private `index_draft`, keeping the project's existing intro,
+How to Use, Statistics and per-entry layout. Include every entry's exact basename,
+monthly groups, summaries and keyword counts. The helper does not render or
+reformat this draft. Publish it with:
+
+<!-- changelog-rebuild -->
+```bash
+python3 "$commit_helper" rebuild --index-draft "$index_draft"
+```
+
+The helper acquires the shared lock, takes a fresh entry inventory, and refuses
+publication unless every entry basename appears in the draft. On refusal it asks
+for a rebuild and leaves the old README intact. Re-inventory all entries, rebuild
+the complete private draft and retry this command; do not allocate another entry.
+Allocation cannot race the coverage check and atomic replacement. Temporary
+replacement files are chmod 0644 before publication. Coverage checks entry names,
+not the accuracy of summaries or statistics: review those in the generated diff.
+
+For an explicit amendment, set `entry_name` to the recorded existing basename and
+prepare the amended private draft, then run:
+
+<!-- changelog-amend -->
+```bash
+python3 "$commit_helper" amend --entry-name "$entry_name" --entry-draft "$entry_draft"
+```
+
+Then rebuild the complete private index draft and run `rebuild --index-draft` above.
+All three commands share the lock. A keyword-vocabulary update must also hold
+that lock for its full read/edit cycle. Generation never stages files. Failure
+retains existing entries and staged work; interrupted allocation can leave an
+owned partial entry and interrupted publication can leave a hidden temporary
+file. Inspect the recorded entry, repair it, then rebuild. Never remove another
+owner's entry, Git index lock or staged changes.
+
 ### Collect index metadata
 
-For index generation, use Grep in content mode with filenames and one following
+To inspect metadata before an amendment or investigate generated summaries,
+use Grep in content mode with filenames and one following
 line of context. If Glob or Grep isn't exposed, use the available shell search
 tools for the same inventory and metadata-only search. For timestamped entries,
 use:
@@ -133,8 +192,9 @@ tool limits output. If the inventory is truncated, narrow it by month or filenam
 prefix until all entries are covered. Reconcile the results with that inventory;
 ignore README.md and nested files. Use targeted Read calls for nonstandard
 filenames, missing metadata, multiline summaries or other unusual layouts before
-writing the complete index. This rebuilds from the entry files after edits or
-merges; there is no metadata cache to invalidate.
+preparing an entry amendment and complete private index draft. After edits or
+merges, collect metadata from all retained entries; there is no metadata cache to
+invalidate. Always publish with the locked `rebuild --index-draft` command above.
 
 ### Scoped Commit Commands
 
@@ -148,34 +208,91 @@ commit_paths=('src/example.ts' 'changelog/2026-11-06-0900-example.md' 'changelog
 commit_message='fix: Describe the reviewed change'
 ```
 
-Stage that scope and check it. Quoting preserves spaces and shell characters;
-`--literal-pathspecs` also prevents Git from treating filenames as patterns, and
-`--` separates filenames from options.
+Stage that scope and check it. Quoting and literal Git pathspecs preserve unusual
+filenames. Keep `review_state` across tool calls. Staging selected files again
+explicitly requests a new review; the shared index retains scoped staging while
+a private index freezes those staged blobs on top of the starting HEAD.
 
 <!-- scoped-stage -->
 ```bash
+review_state=$(mktemp -d "$(git rev-parse --git-path changelog-review).XXXXXX") &&
 (
     set -e
+    set -o pipefail
     test "${#commit_paths[@]}" -gt 0
     git --literal-pathspecs add -- "${commit_paths[@]}"
     git --literal-pathspecs diff --cached --check -- "${commit_paths[@]}"
-    git --literal-pathspecs diff --cached --stat -- "${commit_paths[@]}"
+    base=$(git rev-parse -q --verify HEAD) || base=
+    ri="$review_state/index"
+    GIT_INDEX_FILE="$ri" git read-tree ${base:---empty}
+    GIT_INDEX_FILE="$ri" git --literal-pathspecs rm -q --cached --ignore-unmatch -- "${commit_paths[@]}"
+    git --literal-pathspecs ls-files -s -z -- "${commit_paths[@]}" |
+        GIT_INDEX_FILE="$ri" git update-index -z --index-info
+    tree=$(GIT_INDEX_FILE="$ri" git write-tree)
+    printf '%s\n' "$base" > "$review_state/base"
+    printf '%s\n' "$tree" > "$review_state/tree"
+    GIT_INDEX_FILE="$ri" git diff --cached --stat
 )
 ```
 
-Inspect the diff for these files before committing. Exclude local credentials,
-private logs and unrelated changes; `.gitignore` does not protect tracked files.
-If a selected file contains unrelated hunks, separate those changes before using
-this workflow: `--only` commits the selected files' full working-tree contents.
-After a successful stage/check and review, commit the same file list:
+Inspect the **private reviewed snapshot**, not a later working-tree diff:
+
+<!-- scoped-review -->
+```bash
+GIT_INDEX_FILE="$review_state/index" git diff --cached --check &&
+GIT_INDEX_FILE="$review_state/index" git diff --cached
+```
+
+Exclude local credentials, private logs and unrelated changes. Selected files
+are staged in full; separate unrelated hunks first. Commit this reviewed state:
 
 <!-- scoped-commit -->
 ```bash
-git --literal-pathspecs commit --only -m "$commit_message" -- "${commit_paths[@]}"
+(
+    set -e
+    base=$(cat "$review_state/base")
+    tree=$(cat "$review_state/tree")
+    ri="$review_state/index"
+    # A rejecting hook may have staged changes in the private index on a prior attempt.
+    test "$(GIT_INDEX_FILE="$ri" git write-tree)" = "$tree" || {
+        echo 'Private index changed; stage and review again.' >&2
+        exit 1
+    }
+    test "$(git rev-parse -q --verify HEAD)" = "$base" &&
+        GIT_INDEX_FILE="$ri" git commit -m "$commit_message"
+    # Stop here if HEAD moved or Git rejected the commit; keep the private review.
+    test "$?" -eq 0
+    reviewed_commit=$(git rev-parse HEAD)
+    printf '%s\n' "$reviewed_commit" > "$review_state/commit"
+    printf 'Recorded commit: %s\n' "$reviewed_commit"
+    # Refresh stat information only. Dirty paths or a live index.lock can return nonzero.
+    git update-index --refresh || true
+    if git diff --quiet "$tree" HEAD; then
+        rm -rf -- "$review_state"
+    else
+        echo 'A hook changed the commit; review this diff before continuing.' >&2
+        git diff "$tree" HEAD
+        rm -rf -- "$review_state"
+        exit 1
+    fi
+)
 ```
 
-`--only` leaves other files' pre-existing staged changes staged for their owner.
-Use these scoped commands when skipping or amending a changelog entry as well.
+This uses stock Git commands available before Git 2.36; Python is not involved.
+Normal `git commit` runs hooks and honors signing configuration against the private
+index. If a hook changes the committed tree, the commit already exists: show the
+diff and ask for review before continuing. Do not retry that commit as though it
+failed. Git's ref locking rejects a concurrent HEAD update during commit. If HEAD
+changed before the attempt, stage and review again. Keep the branch/worktree
+unchanged during review. Merges use the normal merge workflow.
+
+The shared index's blob entries are never reconciled or rewritten by this commit
+block. Unrelated staged entries and newer selected staging remain intact. Later
+working-tree edits remain on disk and out of the commit unless a hook stages them
+in the private index; the final tree comparison reports that change. After the
+SHA is recorded, the block refreshes shared-index stat information and removes
+the private index/review directory. Use this procedure when skipping or amending
+a changelog entry too.
 
 ### Operation state and local recovery
 
@@ -195,8 +312,9 @@ or automatic retry service.
 
 If staging, a check or a hook rejects the local commit, retain the existing entry
 and working files. First inspect `git status`, HEAD and the reported error.
-Correct the cause and resume at stage/review with the same entry and selected
-paths. Rebuild the index if the entry inventory or metadata changed. Staging can
+Correct the cause and retry the same private snapshot if HEAD and its tree are
+unchanged, or stage/review again with the same entry and selected paths. Rebuild
+the index if the entry inventory or metadata changed. Staging can
 remain after failure; do not reset the whole index, stash another owner's work,
 or remove a lock owned by a running Git process. If a merge is in progress,
 resolve it through the repository's merge workflow before resuming this partial
@@ -213,12 +331,12 @@ operation. If no matching commit exists and the intended changes remain, resume
 stage/review; if the outcome is still uncertain, retain the files and report the
 uncertainty rather than changing history.
 
-These are recovery instructions for the model, not transaction enforcement.
-Generation does not serialize concurrent writers, and `commit --only` reads the
-selected files' working-tree contents at commit time. Separate worktrees isolate
-files and indexes for independent sessions; they still share Git refs and remote
-state. This procedure does not repair overwritten entries or freeze a reviewed
-file snapshot against later edits.
+The review directory retains the private index, starting HEAD and reviewed tree
+on rejection. Retain it until retry or history inspection establishes the result.
+After recording a successful SHA, remove that directory (including its private
+index); the commit block does this automatically. If output was lost before
+cleanup, inspect history first and then remove only this operation's directory.
+Separate worktrees remain useful for independent work.
 
 ### Scoped push and recovery
 
@@ -431,7 +549,7 @@ Auto-generated index (regenerated after every commit)
 ### After Each Commit
 
 **`changelog/YYYY-MM-DD-HHMM-descriptive-slug.md`:**
-Filled template with session details (timestamp prevents collisions across branches)
+Filled template with session details (exclusive allocation adds a suffix on collision)
 
 ## Configuration
 
@@ -450,9 +568,10 @@ Updates most recent changelog entry instead of creating new one (if continuing s
 ## Tools Used
 
 - **Bash** - Git operations (status, diff, add, commit, push)
-- **Glob** - Inventory changelog entries
+- **Glob** - Inventory all `changelog/*.md` entries for the model-written index draft; the helper rechecks coverage under lock
 - **Read** - Inspect entries with missing or unusual index metadata
-- **Write** - Create new entries and update index
+- **Write** - Prepare private entry and complete index drafts
+- **Python 3.8+** - Locked generation, amendment and index publication on Linux/macOS only
 - **Grep** - Collect index metadata in batches and search existing keywords
 
 ## Error Handling
@@ -504,5 +623,7 @@ Inspect the failure and remote branch, then follow Scoped push and recovery
 - Keywords are case-sensitive by convention (use UPPERCASE)
 - One entry per work session (not per commit if doing multiple quick commits)
 - If continuing work on same feature same day, ask to amend the last entry to update it
-- **Merge-friendly:** Timestamps in filenames prevent collisions across branches
-- After merging branches, ask Claude to regenerate the index if needed
+- **Merge-friendly:** Separate entry files reduce conflicts; reconcile cross-branch collisions
+- After merging branches, rebuild the complete private index draft and run
+  `python3 "$commit_helper" rebuild --index-draft "$index_draft"` as described in
+  [locked generation](#locked-generation)
